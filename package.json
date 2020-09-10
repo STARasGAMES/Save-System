@@ -1,0 +1,19 @@
+{
+  "name": "com.sag.save-system",
+  "version": "0.1",
+  "displayName": "Save System",
+  "description": "This package provides easy to use API to save and load your game.",
+  "unity": "2019.4",
+  "unityRelease": "8f1",
+  "dependencies": {
+    "SaG.GuidReferences": "0.0.1"
+ },
+ "keywords": [
+    "tool"
+  ],
+  "author": {
+    "name": "STARasGAMES",
+    "email": "doterpoter@gmail.com",
+    "url": "https://forum.unity.com/members/mugik.876562/"
+  }
+}

@@ -1,0 +1,18 @@
+{
+    "name": "SaG.SaveSystem.Editor",
+    "references": [
+        "GUID:0129285da39409e4f8b1eebb9c7843fa",
+        "GUID:e921ad2c6c58735448980a63475c7203"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
