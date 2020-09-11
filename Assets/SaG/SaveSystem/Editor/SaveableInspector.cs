@@ -19,7 +19,7 @@ namespace SaG.SaveSystem.Editor
             base.OnInspectorGUI();
 
             var serializedObject = new SerializedObject(targetComponent);
-            var property = serializedObject.FindProperty("cachedSaveableComponents");
+            var property = serializedObject.FindProperty("serializedSaveableComponents");
 
             SerializedProperty arraySizeProp = property.FindPropertyRelative("Array.size");
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SaG.SaveSystem.Interfaces;
 
 namespace SaG.SaveSystem.Core
 {

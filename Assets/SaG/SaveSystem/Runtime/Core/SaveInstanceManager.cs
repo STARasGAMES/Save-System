@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using SaG.SaveSystem.Components;
 using SaG.SaveSystem.Data;
-using SaG.SaveSystem.Enums;
-using SaG.SaveSystem.Interfaces;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -119,7 +117,7 @@ namespace SaG.SaveSystem.Core
             if (saveable == null)
             {
                 Debug.LogWarning("Save Instance Manager: No saveable added to spawned object." +
-                    " Scanning for ISaveables during runtime is more costly.");
+                    $" Scanning for ({nameof(ISaveableComponent)})s during runtime is more costly.");
                 saveable = instance.AddComponent<Saveable>();
                 saveable.ScanAddSaveableComponents();
             }

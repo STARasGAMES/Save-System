@@ -7,7 +7,6 @@ using SaG.GuidReferences;
 using SaG.SaveSystem.Components;
 using SaG.SaveSystem.Core;
 using SaG.SaveSystem.Data;
-using SaG.SaveSystem.Enums;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -285,7 +284,7 @@ namespace SaG.SaveSystem
             {
                 throw new ArgumentOutOfRangeException(nameof(slot), "SaveMaster: Attempted to set illegal slot.");
             }
-            
+
             if (activeSlot == slot && saveGame == null)
             {
                 Debug.LogWarning("Already loaded this slot.");
@@ -506,8 +505,10 @@ namespace SaG.SaveSystem
         {
             if (!activeSaveGame.ContainsId(saveable.Id))
                 return;
-            var data = (JObject) activeSaveGame.Get(saveable.Id);
-            saveable.Load(data);
+            if (activeSaveGame.TryGetValue(saveable.Id, out var data))
+            {
+                saveable.Load((JObject) data);
+            }
         }
 
         /// <summary>
@@ -605,7 +606,10 @@ namespace SaG.SaveSystem
             for (int i = 0; i < count; i++)
             {
                 var saveable = saveables[i];
-                saveable.Load((JObject) activeSaveGame.Get(saveable.Id)); // todo
+                if (activeSaveGame.TryGetValue(saveable.Id, out var data))
+                {
+                    saveable.Load((JObject) data); // todo
+                }
             }
         }
 
@@ -677,7 +681,7 @@ namespace SaG.SaveSystem
         }
 
         /// <summary>
-        /// Get a integer value in the currently active save
+        /// Get an integer value in the currently active save
         /// </summary>
         /// <param name="key"> Identifier to remember storage point </param>
         /// <param name="defaultValue"> In case it fails to obtain the value, return this value </param>
