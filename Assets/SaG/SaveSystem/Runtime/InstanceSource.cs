@@ -1,6 +1,6 @@
 
 
-namespace SaG.SaveSystem.Enums
+namespace SaG.SaveSystem
 {
     /// <summary>
     /// Used to tell the SaveInstanceManager where to pull the 
