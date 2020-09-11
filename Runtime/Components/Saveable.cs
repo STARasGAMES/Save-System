@@ -149,6 +149,7 @@ namespace SaG.SaveSystem.Components
 
         #region ISaveableContainer implementation
         
+        /// <inheritdoc/>
         public string Id
         {
             get
@@ -159,6 +160,7 @@ namespace SaG.SaveSystem.Components
             }
         }
         
+        /// <inheritdoc/>
         public JObject Save()
         {
             foreach (var saveableComponent in _saveableComponents)
@@ -192,6 +194,7 @@ namespace SaG.SaveSystem.Components
             return _container.Save();
         }
 
+        /// <inheritdoc/>
         public void Load(JObject state)
         {
             if (loadOnce && hasLoaded)
@@ -230,24 +233,34 @@ namespace SaG.SaveSystem.Components
             }
         }
 
+        /// <inheritdoc/>
         public void Set<T>(string key, T value)
         {
             _container.Set(key, value);
         }
 
+        /// <inheritdoc/>
         public T Get<T>(string key)
         {
             return _container.Get<T>(key);
         }
 
+        /// <inheritdoc/>
         public object Get(string key, Type type)
         {
             return _container.Get(key, type);
         }
 
+        /// <inheritdoc/>
         public bool Remove(string key)
         {
             return _container.Remove(key);
+        }
+
+        /// <inheritdoc/>
+        public void Clear()
+        {
+            _container.Clear();
         }
 
         #endregion ISaveableContainer implementation

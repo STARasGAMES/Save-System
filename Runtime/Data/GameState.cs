@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SaG.SaveSystem.Data
@@ -9,7 +10,7 @@ namespace SaG.SaveSystem.Data
     /// Placed into a slot (separate save file)
     /// </summary>
     [Serializable]
-    public class SaveGame
+    public class GameState : IGameState
     {
         [Serializable]
         public struct MetaData
@@ -31,7 +32,7 @@ namespace SaG.SaveSystem.Data
         [NonSerialized] public DateTime creationDate;
 
         [SerializeField] public MetaData metaData;
-        [SerializeField] public Dictionary<string, Data> saveData = new Dictionary<string, Data>(StringComparer.Ordinal);
+        [SerializeField] public Dictionary<string, Data> stateData = new Dictionary<string, Data>(StringComparer.Ordinal);
 
         [NonSerialized] private bool loaded;
 
@@ -56,19 +57,17 @@ namespace SaG.SaveSystem.Data
             // todo maybe clear save data from null objects
         }
 
-        /// <summary>
-        /// Wipes all data that associates with provided sceneName. Returns count of removed records.
-        /// </summary>
-        /// <param name="sceneName">Scene name</param>
-        /// <returns>Returns count of removed records.</returns>
-        public int WipeSceneData(string sceneName)
+        
+        /// <inheritdoc/>
+        public bool Remove(string id)
         {
-            List<string> keysToRemove = new List<string>();
-            foreach (var data in saveData)
-            {
-                if (data.Value.context == sceneName)
-                    keysToRemove.Add(data.Key);
-            }
+            return stateData.Remove(id);
+        }
+        
+        /// <inheritdoc/>
+        public int RemoveContext(string context)
+        {
+            var keysToRemove = stateData.Where(pair => pair.Value.context == context).Select(pair => pair.Key).ToList();
 
             foreach (var key in keysToRemove)
             {
@@ -78,32 +77,19 @@ namespace SaG.SaveSystem.Data
             return keysToRemove.Count;
         }
 
-        /// <summary>
-        /// Removes record by its id. Returns <c>true</c> if removed something, otherwise, <c>false</c>.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns>Returns <c>true</c> if removed something, otherwise, <c>false</c>.</returns>
-        public bool Remove(string id)
+        /// <inheritdoc/>
+        public void Set(string id, object value, string context)
         {
-            return saveData.Remove(id);
+            stateData[id] = new Data(){data = value, context = context};
         }
-
-        /// <summary>
-        /// Assign any data to the given ID. If data is already present within the ID, then it will be overwritten.
-        /// </summary>
-        /// <param name="id"> Save Identification </param>
-        /// <param name="data"> Data in a string format </param>
-        /// <param name="sceneName">Scene name</param>
-        public void Set(string id, object data, string sceneName)
-        {
-            saveData[id] = new Data(){data = data, context = sceneName};
-        }
-
-        public bool ContainsId(string id) => saveData.ContainsKey(id);
-
+        
+        /// <inheritdoc/>
+        public bool ContainsId(string id) => stateData.ContainsKey(id);
+        
+        /// <inheritdoc/>
         public bool TryGetValue(string id, out object value)
         {
-            if (!saveData.TryGetValue(id, out var data))
+            if (!stateData.TryGetValue(id, out var data))
             {
                 value = default;
                 return false;
@@ -112,14 +98,10 @@ namespace SaG.SaveSystem.Data
             return true;
         }
 
-        /// <summary>
-        /// Returns any data stored based on a identifier
-        /// </summary>
-        /// <param name="id"> Save Identification </param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public object Get(string id)
         {
-            if (saveData.TryGetValue(id, out var data))
+            if (stateData.TryGetValue(id, out var data))
                 return data.data;
 
             throw new ArgumentOutOfRangeException(nameof(id), $"There is no data with id: {id}");

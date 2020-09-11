@@ -1,4 +1,5 @@
 using System;
+using SaG.SaveSystem.Core;
 using UnityEngine;
 
 namespace SaG.SaveSystem.Components

@@ -18,5 +18,7 @@ namespace SaG.SaveSystem
         object Get(string key, Type type);
 
         bool Remove(string key);
+
+        void Clear();
     }
 }

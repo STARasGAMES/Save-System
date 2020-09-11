@@ -69,5 +69,10 @@ namespace SaG.SaveSystem.Core
         {
             return _state.Remove(key);
         }
+
+        public void Clear()
+        {
+            _state.RemoveAll();
+        }
     }
 }
