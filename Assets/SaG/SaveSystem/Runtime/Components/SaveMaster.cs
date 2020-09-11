@@ -5,12 +5,11 @@ using System.Data;
 using Newtonsoft.Json.Linq;
 using SaG.GuidReferences;
 using SaG.SaveSystem.Components;
-using SaG.SaveSystem.Core;
 using SaG.SaveSystem.Data;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace SaG.SaveSystem
+namespace SaG.SaveSystem.Core
 {
     /// <summary>
     /// Responsible for notifying all Saveable components
@@ -33,7 +32,7 @@ namespace SaG.SaveSystem
         private static bool isQuittingGame;
 
         // Active save game data
-        private static SaveGame activeSaveGame = null;
+        private static GameState _activeGameState = null;
         private static int activeSlot = -1;
 
         // All listeners
@@ -59,7 +58,7 @@ namespace SaG.SaveSystem
 
         private static void OnSceneUnloaded(Scene scene)
         {
-            if (activeSaveGame == null)
+            if (_activeGameState == null)
                 return;
 
             // If it is a duplicate scene, we just remove this handle.
@@ -83,7 +82,7 @@ namespace SaG.SaveSystem
 
         private static void OnSceneLoaded(Scene scene, LoadSceneMode arg1)
         {
-            if (activeSaveGame == null)
+            if (_activeGameState == null)
                 return;
 
             // Store a refeference to a non-duplicate scene
@@ -98,7 +97,7 @@ namespace SaG.SaveSystem
             }
 
             // Dont create save instance manager if there are no saved instances in the scene.
-            if (activeSaveGame.ContainsId($"SaveMaster-{scene.name}-IM"))
+            if (_activeGameState.ContainsId($"SaveMaster-{scene.name}-IM"))
             {
                 return;
             }
@@ -247,7 +246,7 @@ namespace SaG.SaveSystem
             }
 
             activeSlot = -1;
-            activeSaveGame = null;
+            _activeGameState = null;
         }
 
         /// <summary>
@@ -261,7 +260,7 @@ namespace SaG.SaveSystem
             SlotChanging.Invoke(slot);
 
             activeSlot = slot;
-            activeSaveGame = SaveFileUtility.LoadSave(slot, true);
+            _activeGameState = SaveFileUtility.LoadSave(slot, true);
 
             SyncReset();
             SyncSave();
@@ -274,10 +273,10 @@ namespace SaG.SaveSystem
         /// </summary>
         /// <param name="slot"> Target save slot </param>
         /// <param name="reloadSaveables"> Send a message to all saveables to load the new save file </param>
-        /// <param name="saveGame">Directly specify SaveGame to load after slot change.</param>
+        /// <param name="gameState">Directly specify SaveGame to load after slot change.</param>
         /// <param name="autoSaveOnSlotSwitch">If set to true then game will be saved in current slot before slot change.</param>
         /// <param name="cleanSavedPrefabsOnSlotSwitch">Destroy all currently active saved prefabs.</param>
-        public static void SetSlot(int slot, bool reloadSaveables, SaveGame saveGame = null,
+        public static void SetSlot(int slot, bool reloadSaveables, GameState gameState = null,
             bool? autoSaveOnSlotSwitch = null, bool? cleanSavedPrefabsOnSlotSwitch = null)
         {
             if (slot < 0 || slot > SaveSettings.Get().maxSaveSlotCount)
@@ -285,7 +284,7 @@ namespace SaG.SaveSystem
                 throw new ArgumentOutOfRangeException(nameof(slot), "SaveMaster: Attempted to set illegal slot.");
             }
 
-            if (activeSlot == slot && saveGame == null)
+            if (activeSlot == slot && gameState == null)
             {
                 Debug.LogWarning("Already loaded this slot.");
                 return;
@@ -293,7 +292,7 @@ namespace SaG.SaveSystem
 
             // Ensure the current game is saved, and write it to disk, if that is wanted behaviour.
             autoSaveOnSlotSwitch = autoSaveOnSlotSwitch ?? SaveSettings.Get().autoSaveOnSlotSwitch;
-            if (autoSaveOnSlotSwitch.Value && activeSaveGame != null)
+            if (autoSaveOnSlotSwitch.Value && _activeGameState != null)
             {
                 WriteActiveSaveToDisk();
             }
@@ -308,7 +307,7 @@ namespace SaG.SaveSystem
             SlotChanging.Invoke(slot);
 
             activeSlot = slot;
-            activeSaveGame = saveGame ?? SaveFileUtility.LoadSave(slot, true);
+            _activeGameState = gameState ?? SaveFileUtility.LoadSave(slot, true);
 
             if (reloadSaveables)
             {
@@ -326,7 +325,7 @@ namespace SaG.SaveSystem
         {
             if (slot == activeSlot)
             {
-                return activeSaveGame.creationDate;
+                return _activeGameState.creationDate;
             }
 
             if (!IsSlotUsed(slot))
@@ -346,7 +345,7 @@ namespace SaG.SaveSystem
         {
             if (slot == activeSlot)
             {
-                return activeSaveGame.timePlayed;
+                return _activeGameState.timePlayed;
             }
 
             if (!IsSlotUsed(slot))
@@ -366,7 +365,7 @@ namespace SaG.SaveSystem
         {
             if (slot == activeSlot)
             {
-                return activeSaveGame.gameVersion;
+                return _activeGameState.gameVersion;
             }
 
             if (!IsSlotUsed(slot))
@@ -382,11 +381,11 @@ namespace SaG.SaveSystem
             return GetSaveVersion(activeSlot);
         }
 
-        private static SaveGame GetSave(int slot, bool createIfEmpty = true)
+        private static GameState GetSave(int slot, bool createIfEmpty = true)
         {
             if (slot == activeSlot)
             {
-                return activeSaveGame;
+                return _activeGameState;
             }
 
             return SaveFileUtility.LoadSave(slot, createIfEmpty);
@@ -400,16 +399,16 @@ namespace SaG.SaveSystem
         {
             OnWritingToDiskBegin.Invoke(activeSlot);
 
-            if (activeSaveGame != null)
+            if (_activeGameState != null)
             {
                 for (int i = 0; i < saveables.Count; i++)
                 {
                     var saveable = saveables[i];
-                    activeSaveGame.Set(saveable.Id, saveable.Save(),
+                    _activeGameState.Set(saveable.Id, saveable.Save(),
                         saveable.gameObject.scene.name); // todo scene name (or better context?)
                 }
 
-                SaveFileUtility.WriteSave(activeSaveGame, activeSlot);
+                SaveFileUtility.WriteSave(_activeGameState, activeSlot);
             }
             else
             {
@@ -424,7 +423,7 @@ namespace SaG.SaveSystem
 
         public static void LoadActiveSaveFromDisk(bool reloadSaveables = true)
         {
-            activeSaveGame = SaveFileUtility.LoadSave(activeSlot, true);
+            _activeGameState = SaveFileUtility.LoadSave(activeSlot, true);
             if (reloadSaveables)
             {
                 SyncLoad();
@@ -440,7 +439,7 @@ namespace SaG.SaveSystem
         /// You can leave this off for performance if you are certain no active saveables are in the scene.</param>
         public static void WipeSceneData(string name, bool clearSceneSaveables = true)
         {
-            if (activeSaveGame == null)
+            if (_activeGameState == null)
             {
                 throw new NoNullAllowedException("Failed to wipe scene data: No save game loaded.");
             }
@@ -457,7 +456,7 @@ namespace SaG.SaveSystem
                 }
             }
 
-            activeSaveGame.WipeSceneData(name);
+            _activeGameState.WipeSceneData(name);
         }
 
         /// <summary>
@@ -468,14 +467,14 @@ namespace SaG.SaveSystem
         /// <param name="saveable"></param>
         public static void WipeSaveable(Saveable saveable)
         {
-            if (activeSaveGame == null)
+            if (_activeGameState == null)
             {
                 Debug.LogError("Failed to wipe saveable data: No save game loaded.");
                 return;
             }
 
             RemoveListener(saveable, false);
-            activeSaveGame.Remove(saveable.Id);
+            _activeGameState.Remove(saveable.Id);
         }
 
         /// <summary>
@@ -484,13 +483,13 @@ namespace SaG.SaveSystem
         /// <param name="saveData">Save before removing from notification list?</param>
         public static void ClearListeners(bool saveData)
         {
-            if (saveData && activeSaveGame != null)
+            if (saveData && _activeGameState != null)
             {
                 int saveableCount = saveables.Count;
                 for (int i = saveableCount - 1; i >= 0; i--)
                 {
                     var saveable = saveables[i];
-                    activeSaveGame.Set(saveable.Id, saveable.Save(), saveable.gameObject.scene.name); // todo scene name
+                    _activeGameState.Set(saveable.Id, saveable.Save(), saveable.gameObject.scene.name); // todo scene name
                 }
             }
 
@@ -503,9 +502,7 @@ namespace SaG.SaveSystem
         /// <param name="saveable"></param>
         public static void ReloadListener(Saveable saveable)
         {
-            if (!activeSaveGame.ContainsId(saveable.Id))
-                return;
-            if (activeSaveGame.TryGetValue(saveable.Id, out var data))
+            if (_activeGameState.TryGetValue(saveable.Id, out var data))
             {
                 saveable.Load((JObject) data);
             }
@@ -525,7 +522,7 @@ namespace SaG.SaveSystem
             }
 
             saveables.Add(saveable);
-            if (loadData && activeSaveGame != null)
+            if (loadData && _activeGameState != null)
             {
                 ReloadListener(saveable);
             }
@@ -540,9 +537,9 @@ namespace SaG.SaveSystem
         {
             if (saveables.Remove(saveable))
             {
-                if (saveData && saveable != null && activeSaveGame != null)
+                if (saveData && saveable != null && _activeGameState != null)
                 {
-                    activeSaveGame.Set(saveable.Id, saveable.Save(), saveable.gameObject.scene.name); // todo
+                    _activeGameState.Set(saveable.Id, saveable.Save(), saveable.gameObject.scene.name); // todo
                 }
             }
         }
@@ -558,7 +555,7 @@ namespace SaG.SaveSystem
             if (slot == activeSlot)
             {
                 activeSlot = -1;
-                activeSaveGame = null;
+                _activeGameState = null;
             }
         }
 
@@ -575,7 +572,7 @@ namespace SaG.SaveSystem
         /// </summary>
         public static void SyncSave()
         {
-            if (activeSaveGame == null)
+            if (_activeGameState == null)
             {
                 throw new NoNullAllowedException("SaveMaster Request Save Failed: " +
                                                  "No active SaveGame has been set. Be sure to call SetSlot(index)");
@@ -586,7 +583,7 @@ namespace SaG.SaveSystem
             for (int i = 0; i < count; i++)
             {
                 var saveable = saveables[i];
-                activeSaveGame.Set(saveable.Id, saveable.Save(), saveable.gameObject.scene.name);
+                _activeGameState.Set(saveable.Id, saveable.Save(), saveable.gameObject.scene.name);
             }
         }
 
@@ -595,7 +592,7 @@ namespace SaG.SaveSystem
         /// </summary>
         public static void SyncLoad()
         {
-            if (activeSaveGame == null)
+            if (_activeGameState == null)
             {
                 throw new NoNullAllowedException("SaveMaster Request Load Failed: " +
                                                  "No active SaveGame has been set. Be sure to call SetSlot(index)");
@@ -606,7 +603,7 @@ namespace SaG.SaveSystem
             for (int i = 0; i < count; i++)
             {
                 var saveable = saveables[i];
-                if (activeSaveGame.TryGetValue(saveable.Id, out var data))
+                if (_activeGameState.TryGetValue(saveable.Id, out var data))
                 {
                     saveable.Load((JObject) data); // todo
                 }
@@ -618,7 +615,7 @@ namespace SaG.SaveSystem
         /// </summary>
         public static void SyncReset()
         {
-            if (activeSaveGame == null)
+            if (_activeGameState == null)
             {
                 throw new NoNullAllowedException("No active SaveGame has been set. Be sure to call SetSlot(index)");
             }
@@ -677,7 +674,7 @@ namespace SaG.SaveSystem
         public static void SetInt(string key, int value)
         {
             if (HasActiveSaveLogAction("Set Int") == false) return;
-            activeSaveGame.Set(string.Format("IVar-{0}", key), value.ToString(), "Global");
+            _activeGameState.Set(string.Format("IVar-{0}", key), value.ToString(), "Global");
         }
 
         /// <summary>
@@ -689,7 +686,7 @@ namespace SaG.SaveSystem
         public static int GetInt(string key, int defaultValue = -1)
         {
             if (HasActiveSaveLogAction("Get Int") == false) return defaultValue;
-            var getData = (string) activeSaveGame.Get(string.Format("IVar-{0}", key));
+            var getData = (string) _activeGameState.Get(string.Format("IVar-{0}", key));
             return string.IsNullOrEmpty((getData)) ? defaultValue : int.Parse(getData);
         }
 
@@ -701,7 +698,7 @@ namespace SaG.SaveSystem
         public static void SetFloat(string key, float value)
         {
             if (HasActiveSaveLogAction("Set Float") == false) return;
-            activeSaveGame.Set(string.Format("FVar-{0}", key), value.ToString(), "Global");
+            _activeGameState.Set(string.Format("FVar-{0}", key), value.ToString(), "Global");
         }
 
         /// <summary>
@@ -713,23 +710,23 @@ namespace SaG.SaveSystem
         public static float GetFloat(string key, float defaultValue = -1)
         {
             if (HasActiveSaveLogAction("Get Float") == false) return defaultValue;
-            var getData = (string) activeSaveGame.Get(string.Format("FVar-{0}", key));
+            var getData = (string) _activeGameState.Get(string.Format("FVar-{0}", key));
             return string.IsNullOrEmpty((getData)) ? defaultValue : float.Parse(getData);
         }
 
         /// <summary>
-        /// Set a string value in the currently active save
+        /// Sets a string value in the currently active save.
         /// </summary>
         /// <param name="key"> Identifier for value </param>
         /// <param name="value"> Value to store </param>
         public static void SetString(string key, string value)
         {
             if (HasActiveSaveLogAction("Set String") == false) return;
-            activeSaveGame.Set(string.Format("SVar-{0}", key), value, "Global");
+            _activeGameState.Set(string.Format("SVar-{0}", key), value, "Global");
         }
 
         /// <summary>
-        /// Get a string value in the currently active save
+        /// Gets a string value in the currently active save.
         /// </summary>
         /// <param name="key"> Identifier to remember storage point </param>
         /// <param name="defaultValue"> In case it fails to obtain the value, return this value </param>
@@ -737,7 +734,7 @@ namespace SaG.SaveSystem
         public static string GetString(string key, string defaultValue = "")
         {
             if (HasActiveSaveLogAction("Get String") == false) return defaultValue;
-            var getData = (string) activeSaveGame.Get(string.Format("SVar-{0}", key));
+            var getData = (string) _activeGameState.Get(string.Format("SVar-{0}", key));
             return string.IsNullOrEmpty((getData)) ? defaultValue : getData;
         }
 
@@ -910,15 +907,13 @@ namespace SaG.SaveSystem
 
         private IEnumerator IncrementTimePlayed()
         {
-            WaitForSeconds incrementSecond = new WaitForSeconds(1);
-
             while (true)
             {
-                yield return incrementSecond;
+                yield return null;
 
                 if (activeSlot >= 0)
                 {
-                    activeSaveGame.timePlayed = activeSaveGame.timePlayed.Add(TimeSpan.FromSeconds(1));
+                    _activeGameState.timePlayed = _activeGameState.timePlayed.Add(TimeSpan.FromSeconds(Time.deltaTime));
                 }
             }
         }

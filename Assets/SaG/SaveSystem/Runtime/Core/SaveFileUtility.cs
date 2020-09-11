@@ -97,7 +97,7 @@ namespace SaG.SaveSystem.Core
             return newSavePaths;
         }
 
-        private static SaveGame LoadSaveFromPath(string savePath)
+        private static GameState LoadSaveFromPath(string savePath)
         {
             string data = "";
 
@@ -113,12 +113,12 @@ namespace SaG.SaveSystem.Core
                 return null;
             }
 
-            SaveGame getSave = JsonConvert.DeserializeObject<SaveGame>(data);
+            GameState get = JsonConvert.DeserializeObject<GameState>(data);
 
-            if (getSave != null)
+            if (get != null)
             {
-                getSave.OnLoad();
-                return getSave;
+                get.OnLoad();
+                return get;
             }
             else
             {
@@ -147,7 +147,7 @@ namespace SaG.SaveSystem.Core
             return ObtainSavePaths().Count;
         }
 
-        public static SaveGame LoadSave(int slot, bool createIfEmpty = false)
+        public static GameState LoadSave(int slot, bool createIfEmpty = false)
         {
             if (slot < 0)
             {
@@ -163,16 +163,16 @@ namespace SaG.SaveSystem.Core
 
             if (ObtainSavePaths().TryGetValue(slot, out savePath))
             {
-                SaveGame saveGame = LoadSaveFromPath(savePath);
+                GameState gameState = LoadSaveFromPath(savePath);
 
-                if (saveGame == null)
+                if (gameState == null)
                 {
                     cachedSavePaths.Remove(slot);
                     return null;
                 }
 
                 Log(string.Format("Succesful load at slot (from cache): {0}", slot));
-                return saveGame;
+                return gameState;
             }
             else
             {
@@ -184,18 +184,18 @@ namespace SaG.SaveSystem.Core
                 {
                     Log(string.Format("Creating save at slot {0}", slot));
 
-                    SaveGame saveGame = new SaveGame();
+                    GameState gameState = new GameState();
 
-                    WriteSave(saveGame, slot);
+                    WriteSave(gameState, slot);
 
-                    return saveGame;
+                    return gameState;
                 }
 
                 return null;
             }
         }
 
-        public static void WriteSave(SaveGame saveGame, int saveSlot)
+        public static void WriteSave(GameState gameState, int saveSlot)
         {
             string savePath = string.Format("{0}/{1}{2}{3}", DataPath, gameFileName, saveSlot.ToString(),
                 fileExtentionName);
@@ -207,11 +207,11 @@ namespace SaG.SaveSystem.Core
 
             Log(string.Format("Saving game slot {0} to : {1}", saveSlot.ToString(), savePath));
 
-            saveGame.OnWrite();
+            gameState.OnWrite();
 
             using (var writer = new BinaryWriter(File.Open(savePath, FileMode.Create)))
             {
-                var jsonString = JsonConvert.SerializeObject(saveGame, formatting:
+                var jsonString = JsonConvert.SerializeObject(gameState, formatting:
                     SaveSettings.Get().useJsonPrettyPrint ? Formatting.Indented : Formatting.None);
                 Debug.Log($"json string: {jsonString}");
                 writer.Write(jsonString);

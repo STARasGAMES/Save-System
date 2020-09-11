@@ -1,4 +1,5 @@
 ﻿using SaG.SaveSystem.Components;
+using SaG.SaveSystem.Core;
 using UnityEngine;
 using UnityEngine.UI;
 

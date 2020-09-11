@@ -3,6 +3,7 @@ using System.Collections;
 using NUnit.Framework;
 using SaG.GuidReferences;
 using SaG.SaveSystem.Components;
+using SaG.SaveSystem.Core;
 using UnityEngine;
 using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
