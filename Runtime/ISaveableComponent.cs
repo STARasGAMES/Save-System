@@ -1,7 +1,7 @@
 
 using System;
 
-namespace SaG.SaveSystem.Interfaces
+namespace SaG.SaveSystem
 {
     public interface ISaveableComponent
     {
