@@ -59,7 +59,8 @@ namespace SaG.SaveSystem.Components
 
             if (!manualSaveLoad)
             {
-                SaveMaster.AddListener(this);
+                SaveSystemSingleton.Instance.GameStateManager.RegisterContainer(this, true);
+                //SaveMaster.AddListener(this);
             }
         }
 
@@ -67,7 +68,8 @@ namespace SaG.SaveSystem.Components
         {
             if (!manualSaveLoad)
             {
-                SaveMaster.RemoveListener(this);
+                SaveSystemSingleton.Instance.GameStateManager.UnregisterContainer(this, true);
+                //SaveMaster.RemoveListener(this);
             }
 
 #if UNITY_EDITOR
@@ -161,6 +163,9 @@ namespace SaG.SaveSystem.Components
         }
         
         /// <inheritdoc/>
+        public string Context => gameObject.scene.name; // todo cache?
+
+        /// <inheritdoc/>
         public JObject Save()
         {
             foreach (var saveableComponent in _saveableComponents)
@@ -249,6 +254,18 @@ namespace SaG.SaveSystem.Components
         public object Get(string key, Type type)
         {
             return _container.Get(key, type);
+        }
+        
+        /// <inheritdoc/>
+        public bool TryGetValue(string key, out object value, Type type)
+        {
+            return _container.TryGetValue(key, out value, type);
+        }
+        
+        /// <inheritdoc/>
+        public bool TryGetValue<T>(string key, out T value)
+        {
+            return _container.TryGetValue(key, out value);
         }
 
         /// <inheritdoc/>
