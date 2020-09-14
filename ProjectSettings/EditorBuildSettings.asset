@@ -8,4 +8,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/SaG/SaveSystem/Samples/Tests/TestScene.unity
     guid: e43f5a4ad7c6ab34097c743044a35a94
+  - enabled: 1
+    path: Assets/SaG/SaveSystem/Samples/Checkpoints/Scenes/Level1.unity
+    guid: 2e6cad8ded2a5dd46ad0da48fcac38f6
+  - enabled: 1
+    path: Assets/SaG/SaveSystem/Samples/Checkpoints/Scenes/Level2.unity
+    guid: fd733051c33af64408e4c70f62393fd9
+  - enabled: 1
+    path: Assets/SaG/SaveSystem/Samples/Checkpoints/Scenes/Level3.unity
+    guid: b7012da135585ba4b8c46fe613c67596
   m_configObjects: {}

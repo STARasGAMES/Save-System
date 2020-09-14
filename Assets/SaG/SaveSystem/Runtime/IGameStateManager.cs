@@ -30,6 +30,11 @@ namespace SaG.SaveSystem
         ISaveableContainer DefaultContainer { get; }
         
         /// <summary>
+        /// Gets or sets current game state.
+        /// </summary>
+        IGameState GameState { get; set; }
+        
+        /// <summary>
         /// Gathers all data from active saveables and stores it in currently active game state.
         /// You need to call this method before unload scene to save state of objects that are going to be destroyed. 
         /// </summary>
@@ -52,27 +57,28 @@ namespace SaG.SaveSystem
         /// Unregisters container from auto synchronization with game state.
         /// Note: no data will be removed.
         /// </summary>
-        /// <param name="saveableContainer"></param>
-        /// <param name="autoSave"></param>
+        /// <param name="saveableContainer">Saveable container</param>
+        /// <param name="autoSave">Indicates whether container will be saved right before unregistration.</param>
         /// <returns><c>true</c> if container is successfully found and removed; otherwise, <c>false</c>.</returns>
         bool UnregisterContainer(ISaveableContainer saveableContainer, bool autoSave = false);
 
         /// <summary>
         /// Saves container to currently active game state.
         /// </summary>
-        /// <param name="saveableContainer"></param>
+        /// <param name="saveableContainer">Saveable container</param>
         void SaveContainer(ISaveableContainer saveableContainer);
 
         /// <summary>
         /// Loads container from currently active game state.
         /// </summary>
-        /// <param name="saveableContainer"></param>
+        /// <param name="saveableContainer">Saveable container</param>
+        /// <remarks>This will not call <c>Load()</c> method on saveable container if there is no data about specified container.</remarks>
         void LoadContainer(ISaveableContainer saveableContainer);
 
         /// <summary>
         /// Wipes all data associated with specified container in currently active game state.
         /// </summary>
-        /// <param name="saveableContainer">Container</param>
+        /// <param name="saveableContainer">Saveable container</param>
         /// <returns><c>true</c> if data successfully found and wiped; otherwise, <c>false</c>.</returns>
         bool WipeContainer(ISaveableContainer saveableContainer);
     }

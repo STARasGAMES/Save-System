@@ -6,6 +6,8 @@ namespace SaG.SaveSystem
     public interface ISaveableContainer
     {
         string Id { get; }
+        
+        string Context { get; }
 
         JObject Save();
 
@@ -16,6 +18,10 @@ namespace SaG.SaveSystem
         T Get<T>(string key);
 
         object Get(string key, Type type);
+
+        bool TryGetValue(string key, out object value, Type type);
+
+        bool TryGetValue<T>(string key, out T value);
 
         bool Remove(string key);
 

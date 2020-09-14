@@ -455,8 +455,8 @@ namespace SaG.SaveSystem.Core
                     }
                 }
             }
-
-            _activeGameState.WipeSceneData(name);
+            // todo game state manager.WipeContext
+            //_activeGameState.WipeSceneData(name);
         }
 
         /// <summary>

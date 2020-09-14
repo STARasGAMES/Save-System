@@ -6,8 +6,7 @@ using UnityEngine;
 namespace SaG.SaveSystem.Data
 {
     /// <summary>
-    /// Container for all saved data.
-    /// Placed into a slot (separate save file)
+    /// Container for all game state data.
     /// </summary>
     [Serializable]
     public class GameState : IGameState

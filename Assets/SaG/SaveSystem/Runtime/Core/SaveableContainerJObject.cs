@@ -22,12 +22,15 @@ namespace SaG.SaveSystem.Core
             } 
         }
         public string Id { get; }
-        
+
+        public string Context { get; }
+
         private JObject _state;
 
-        public SaveableContainerJObject(string id)
+        public SaveableContainerJObject(string id, string context = null)
         {
             Id = id;
+            Context = context;
             _state = new JObject();
         }
         
@@ -61,8 +64,25 @@ namespace SaG.SaveSystem.Core
             {
                 return value.ToObject(type);
             }
+            throw new ArgumentOutOfRangeException(nameof(key), $"There is no such key: '{key}'.");
+        }
 
-            return null;
+        public bool TryGetValue(string key, out object value, Type type)
+        {
+            if (!_state.TryGetValue(key, out var d))
+            {
+                value = default;
+                return false;
+            }
+            value = d.ToObject(type);
+            return true;
+        }
+
+        public bool TryGetValue<T>(string key, out T value)
+        {
+            var result = TryGetValue(key, out var d, typeof(T));
+            value = (T)d;
+            return result;
         }
 
         public bool Remove(string key)

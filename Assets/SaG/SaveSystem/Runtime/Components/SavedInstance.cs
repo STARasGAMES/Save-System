@@ -1,7 +1,7 @@
-﻿using SaG.SaveSystem.Components;
+﻿using SaG.SaveSystem.Core;
 using UnityEngine;
 
-namespace SaG.SaveSystem.Core
+namespace SaG.SaveSystem.Components
 {
     /// <summary>
     /// Saved instances are objects that should respawn when they are not destroyed.
@@ -25,7 +25,8 @@ namespace SaG.SaveSystem.Core
         {
             saveable.ManualSaveLoad = true;
             removeData = false;
-            SaveMaster.RemoveListener(saveable);
+            SaveSystemSingleton.Instance.GameStateManager.UnregisterContainer(saveable, true);
+            //SaveMaster.RemoveListener(saveable);
             Destroy(gameObject);
         }
 
