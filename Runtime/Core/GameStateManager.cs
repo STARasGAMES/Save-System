@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using SaG.SaveSystem.Data;
+using UnityEngine;
 
 namespace SaG.SaveSystem.Core
 {
@@ -10,12 +11,18 @@ namespace SaG.SaveSystem.Core
         private readonly IList<ISaveableContainer> containers;
         public IGameState GameState { get; set; }
         
+        public bool IsApplicationQuitting { get; private set; }
+
+        public bool IsIgnoringStateSynchronization { get; set; }
+
         public GameStateManager()
         {
             containers = new List<ISaveableContainer>();
             GameState = new GameState();
             DefaultContainer = new SaveableContainerJObject("DefaultContainer");
             RegisterContainer(DefaultContainer);
+            IsApplicationQuitting = false;
+            Application.quitting += () => IsApplicationQuitting = true;
         }
 
         /// <inheritdoc/>
@@ -79,7 +86,9 @@ namespace SaG.SaveSystem.Core
         /// <inheritdoc/>
         public void SaveContainer(ISaveableContainer saveableContainer)
         {
-            GameState.Set(saveableContainer.Id, saveableContainer.Save(), "todo");
+            if (IsIgnoringStateSynchronization)
+                return;
+            GameState.Set(saveableContainer.Id, saveableContainer.Save(), saveableContainer.Context);
         }
 
         /// <inheritdoc/>

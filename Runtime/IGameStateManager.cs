@@ -35,6 +35,16 @@ namespace SaG.SaveSystem
         IGameState GameState { get; set; }
         
         /// <summary>
+        /// Gets a value that indicates is application quitting.  
+        /// </summary>
+        bool IsApplicationQuitting { get; }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether all state synchronization requests will be ignored.
+        /// </summary>
+        bool IsIgnoringStateSynchronization { get; set; }
+        
+        /// <summary>
         /// Gathers all data from active saveables and stores it in currently active game state.
         /// You need to call this method before unload scene to save state of objects that are going to be destroyed. 
         /// </summary>
@@ -60,10 +70,10 @@ namespace SaG.SaveSystem
         /// <param name="saveableContainer">Saveable container</param>
         /// <param name="autoSave">Indicates whether container will be saved right before unregistration.</param>
         /// <returns><c>true</c> if container is successfully found and removed; otherwise, <c>false</c>.</returns>
-        bool UnregisterContainer(ISaveableContainer saveableContainer, bool autoSave = false);
+        bool UnregisterContainer(ISaveableContainer saveableContainer, bool autoSave = true);
 
         /// <summary>
-        /// Saves container to currently active game state.
+        /// Saves container into currently active game state.
         /// </summary>
         /// <param name="saveableContainer">Saveable container</param>
         void SaveContainer(ISaveableContainer saveableContainer);

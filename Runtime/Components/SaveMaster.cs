@@ -85,7 +85,7 @@ namespace SaG.SaveSystem.Core
             if (_activeGameState == null)
                 return;
 
-            // Store a refeference to a non-duplicate scene
+            // Store a reference to a non-duplicate scene
             if (!loadedSceneNames.ContainsKey(scene.name))
             {
                 loadedSceneNames.Add(scene.name, scene.GetHashCode());
