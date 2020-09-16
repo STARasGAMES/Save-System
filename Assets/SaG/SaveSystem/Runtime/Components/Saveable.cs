@@ -59,8 +59,7 @@ namespace SaG.SaveSystem.Components
 
             if (!manualSaveLoad)
             {
-                SaveSystemSingleton.Instance.GameStateManager.RegisterContainer(this, true);
-                //SaveMaster.AddListener(this);
+                SaveSystemSingleton.Instance.GameStateManager.RegisterContainer(this);
             }
         }
 
@@ -68,8 +67,7 @@ namespace SaG.SaveSystem.Components
         {
             if (!manualSaveLoad)
             {
-                SaveSystemSingleton.Instance.GameStateManager.UnregisterContainer(this, true);
-                //SaveMaster.RemoveListener(this);
+                SaveSystemSingleton.Instance.GameStateManager.UnregisterContainer(this);
             }
 
 #if UNITY_EDITOR
@@ -80,12 +78,33 @@ namespace SaG.SaveSystem.Components
 #endif
         }
 
+        /// <summary>
+        /// Returns if the object has been destroyed using GameObject.Destroy(obj).
+        /// Will return false if it has been destroyed due to the game exiting or scene unloading.
+        /// </summary>
+        /// <param name="gameObject">Game object</param>
+        /// <returns></returns>
+        public static bool IsObjectDestroyedExplicitly(GameObject gameObject)
+        {
+            return gameObject.scene.isLoaded && !SaveSystemSingleton.Instance.GameStateManager.IsApplicationQuitting;
+        }
 
         /// <summary>
         /// Gets and adds a saveable components. This is only required when you want to
         /// create gameobjects dynamically through C#. Keep in mind that changing the component add order
-        /// will change the way it gets loaded.
+        /// will change the way it gets loaded, because this method will automatically
+        /// assign IDs to each <see cref="ISaveableComponent"/> and these IDs depend on component order.
+        /// ID example: "Dyn-position-0".
         /// </summary>
+        /// <example><code>
+        /// var go = new GameObject("My dynamically created game object");
+        /// go.SetActive(false); // we need to disable object first to prevent Awake() on <see cref="Saveable"/>.
+        /// go.AddComponent{SomeSaveableComponent}(); // adding order of <see cref="ISaveableComponent"/> must not change, otherwise, you will lose saved data about this components.
+        /// go.AddComponent{SomeAnotherSaveableComponent}();
+        /// var saveable = go.AddComponent{Saveable}(); // adding the main <see cref="Saveable"/> component, without it game object will not save.
+        /// saveable.<see cref="ScanAddSaveableComponents"/>();
+        /// go.SetActive(true);
+        /// </code></example>
         public void ScanAddSaveableComponents()
         {
             ISaveableComponent[] saveables = GetComponentsInChildren<ISaveableComponent>();
@@ -226,8 +245,7 @@ namespace SaG.SaveSystem.Components
                 }
                 else
                 {
-                    var data = _container.Get(saveableComponentId, saveableComponent.SaveDataType);
-                    if (data != null)
+                    if (_container.TryGetValue(saveableComponentId, out var data, saveableComponent.SaveDataType))
                         saveableComponent.Load(data);
                 }
             }

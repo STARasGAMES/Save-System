@@ -58,7 +58,7 @@ namespace SaG.SaveSystem.Core
 
         public void DeleteFile(string fileName)
         {
-            File.Delete(fileName);
+            File.Delete(GetPathForFile(fileName));
         }
     }
 }

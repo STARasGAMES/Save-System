@@ -11,17 +11,15 @@ namespace SaG.SaveSystem
         Type SaveDataType { get; }
         
         /// <summary>
-        /// Called by a Saveable component. SaveMaster (request save) 
-        /// -> notify to all Saveables -> return data to active save file with OnSave()
+        /// Returns object that contains save data.
         /// </summary>
-        /// <returns> Data for the save file </returns>
+        /// <returns>Save data</returns>
         object Save();
 
         /// <summary>
-        /// Called by a Saveable component. SaveMaster (request load) 
-        /// -> notify to all Saveables -> obtain data for this specific component with Load()
+        /// Loads state from provided save data.
         /// </summary>
-        /// <param name="data"> Data that gets retrieved from the active save file </param>
+        /// <param name="data">Save data</param>
         void Load(object data);
 
         /// <summary>
