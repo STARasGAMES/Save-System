@@ -78,7 +78,7 @@ namespace SaG.SaveSystem.Samples.Platformer2D
             throw new ArgumentException($"Trying to remove {count} '{itemName}', but there is no such item.", nameof(itemName));
         }
 
-        public bool HasItem(string itemName, int count = 1)
+        public bool ContainsItem(string itemName, int count = 1)
         {
             for (int i = 0; i < _items.Count; i++)
             {

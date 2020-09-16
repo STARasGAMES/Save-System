@@ -15,5 +15,22 @@
     "name": "STARasGAMES",
     "email": "doterpoter@gmail.com",
     "url": "https://forum.unity.com/members/mugik.876562/"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Platfromer 2D",
+      "description": "Simple platformer 2D game that shows how you can use Save System in your project. Also, shows how to utilize custom GUID providers.",
+      "path": "Samples~/Platformer2D"
+    },
+    {
+      "displayName": "Runtime Spawned Objects Saving",
+      "description": "Shows how to spawn objects at runtime so they can be saved and restored on load.",
+      "path": "Samples~/Demo2"
+    },
+    {
+      "displayName": "Speed Test",
+      "description": "You can run this sample to have an idea on how much time Save System uses to save/load/sync game state",
+      "path": "Samples~/SpeedTest"
+    }
+  ]
 }

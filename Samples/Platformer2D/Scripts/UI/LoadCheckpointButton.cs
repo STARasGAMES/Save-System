@@ -6,7 +6,7 @@ namespace SaG.SaveSystem.Samples.Platformer2D.UI
     {
         public void LoadCheckpoint()
         {
-            Game.LoadGameFromFile("checkpoint");
+            GAME.LoadGameFromFile("checkpoint");
         }
     }
 }

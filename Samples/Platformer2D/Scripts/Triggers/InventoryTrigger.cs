@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
 
-namespace SaG.SaveSystem.Samples.Platformer2D
+namespace SaG.SaveSystem.Samples.Platformer2D.Triggers
 {
     public class InventoryTrigger : MonoBehaviour
     {
@@ -14,7 +14,7 @@ namespace SaG.SaveSystem.Samples.Platformer2D
             if (other.CompareTag("Player"))
             {
                 var inventory = other.GetComponent<Inventory>();
-                if (inventory.HasItem(_item, _count))
+                if (inventory.ContainsItem(_item, _count))
                 {
                     inventory.RemoveItem(_item, _count);
                     _event.Invoke();

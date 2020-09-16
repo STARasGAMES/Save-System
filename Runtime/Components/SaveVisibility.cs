@@ -23,7 +23,7 @@ namespace SaG.SaveSystem.Components
         {
             // Ensure that it doesn't get toggled when the object is
             // deactivated /activated during scene load/unload
-            if (SaveMaster.DeactivatedObjectExplicitly(gameObject))
+            if (SaveMaster.IsGameObjectDisabledExplicitly(gameObject))
             {
                 isEnabled = false;
             }

@@ -6,7 +6,7 @@ namespace SaG.SaveSystem.Samples.Platformer2D.UI
     {
         public void SaveGame()
         {
-            Game.ManualSave();
+            GAME.ManualSave();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace SaG.SaveSystem.Samples.Platformer2D
+namespace SaG.SaveSystem.Samples.Platformer2D.Triggers
 {
     public class SceneTransitionTrigger : MonoBehaviour
     {
@@ -16,7 +16,7 @@ namespace SaG.SaveSystem.Samples.Platformer2D
         {
             if (other.CompareTag("Player"))
             {
-                Game.LoadScene(sceneName);
+                GAME.LoadScene(sceneName);
             }
         }
     }
