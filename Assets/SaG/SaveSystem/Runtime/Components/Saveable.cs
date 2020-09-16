@@ -5,7 +5,10 @@ using Newtonsoft.Json.Linq;
 using SaG.GuidReferences;
 using SaG.SaveSystem.Core;
 using SaG.SaveSystem.Data;
+#if UNITY_EDITOR
 using SaG.SaveSystem.Editor.Tools;
+using UnityEditor;
+#endif
 using UnityEngine;
 
 namespace SaG.SaveSystem.Components
@@ -15,7 +18,7 @@ namespace SaG.SaveSystem.Components
     /// </summary>
     [DisallowMultipleComponent, DefaultExecutionOrder(-9001)]
     [AddComponentMenu("Saving/Saveable")]
-    [RequireComponent(typeof(GuidComponent))]
+    [RequireComponent(typeof(IGuidProvider))]
     public class Saveable : MonoBehaviour, ISaveableContainer
     {
         [Header("Save configuration")]
@@ -33,7 +36,9 @@ namespace SaG.SaveSystem.Components
         [SerializeField]
         private List<CachedSaveableComponent> serializedSaveableComponents = new List<CachedSaveableComponent>();
 
-        private readonly IDictionary<string, ISaveableComponent> _saveableComponents = new Dictionary<string, ISaveableComponent>();
+        private readonly IDictionary<string, ISaveableComponent> _saveableComponents =
+            new Dictionary<string, ISaveableComponent>();
+
         private SaveableContainerJObject _container;
 
         private IGuidProvider _cachedGuidProvider;
@@ -54,7 +59,8 @@ namespace SaG.SaveSystem.Components
 
             foreach (var cachedSaveableComponent in serializedSaveableComponents)
             {
-                _saveableComponents.Add(cachedSaveableComponent.identifier, (ISaveableComponent) cachedSaveableComponent.component);
+                _saveableComponents.Add(cachedSaveableComponent.identifier,
+                    (ISaveableComponent) cachedSaveableComponent.component);
             }
 
             if (!manualSaveLoad)
@@ -116,8 +122,8 @@ namespace SaG.SaveSystem.Components
                 AddSaveableComponent($"Dyn-{GetBaseIdForSaveableComponent(saveable)}-{i.ToString()}", saveables[i]);
             }
 
-            // Load it again, to ensure all ISaveable interfaces are updated.
-            SaveMaster.ReloadListener(this);
+            // Load it again, to ensure all ISaveableComponent interfaces are updated.
+            SaveSystemSingleton.Instance.GameStateManager.LoadContainer(this);
         }
 
         /// <summary>
@@ -135,8 +141,8 @@ namespace SaG.SaveSystem.Components
 
             if (reloadData)
             {
-                // Load it again, to ensure all ISaveable interfaces are updated.
-                SaveMaster.ReloadListener(this);
+                // Load it again, to ensure all ISaveableComponent interface are updated.
+                SaveSystemSingleton.Instance.GameStateManager.LoadContainer(this);
             }
         }
 
@@ -169,7 +175,7 @@ namespace SaG.SaveSystem.Components
         }
 
         #region ISaveableContainer implementation
-        
+
         /// <inheritdoc/>
         public string Id
         {
@@ -180,7 +186,7 @@ namespace SaG.SaveSystem.Components
                 return _cachedGuidProvider.GetStringGuid();
             }
         }
-        
+
         /// <inheritdoc/>
         public string Context => gameObject.scene.name; // todo cache?
 
@@ -208,8 +214,10 @@ namespace SaG.SaveSystem.Components
                     _container.Set(getIdentification, data);
                 }
             }
+
             // clear empty records if any
-            foreach (var emptyKey in _saveableComponents.Where(pair => pair.Value == null).Select(pair => pair.Key).ToArray())
+            foreach (var emptyKey in _saveableComponents.Where(pair => pair.Value == null).Select(pair => pair.Key)
+                .ToArray())
             {
                 _saveableComponents.Remove(emptyKey);
             }
@@ -233,7 +241,7 @@ namespace SaG.SaveSystem.Components
                 _container = new SaveableContainerJObject("Saveable GameObject Container");
             _container.Load(state);
 
-            foreach(var pair in _saveableComponents)
+            foreach (var pair in _saveableComponents)
             {
                 string saveableComponentId = pair.Key;
                 ISaveableComponent saveableComponent = pair.Value;
@@ -249,8 +257,10 @@ namespace SaG.SaveSystem.Components
                         saveableComponent.Load(data);
                 }
             }
+
             // clear empty records if any
-            foreach (var emptyKey in _saveableComponents.Where(pair => pair.Value == null).Select(pair => pair.Key).ToArray())
+            foreach (var emptyKey in _saveableComponents.Where(pair => pair.Value == null).Select(pair => pair.Key)
+                .ToArray())
             {
                 _saveableComponents.Remove(emptyKey);
             }
@@ -273,13 +283,13 @@ namespace SaG.SaveSystem.Components
         {
             return _container.Get(key, type);
         }
-        
+
         /// <inheritdoc/>
         public bool TryGetValue(string key, out object value, Type type)
         {
             return _container.TryGetValue(key, out value, type);
         }
-        
+
         /// <inheritdoc/>
         public bool TryGetValue<T>(string key, out T value)
         {
@@ -307,6 +317,11 @@ namespace SaG.SaveSystem.Components
         {
             if (Application.isPlaying)
                 return;
+
+            if (GetComponent<IGuidProvider>() == null)
+            {
+                Undo.AddComponent<GuidComponent>(gameObject);
+            }
 
             List<ISaveableComponent> obtainSaveables = new List<ISaveableComponent>();
             GetComponentsInChildren(true, obtainSaveables);

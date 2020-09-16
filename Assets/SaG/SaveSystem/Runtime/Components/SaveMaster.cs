@@ -159,7 +159,7 @@ namespace SaG.SaveSystem.Core
         /// </summary>
         /// <param name="gameObject"></param>
         /// <returns></returns>
-        public static bool DeactivatedObjectExplicitly(GameObject gameObject)
+        public static bool IsGameObjectDisabledExplicitly(GameObject gameObject)
         {
             return gameObject.scene.isLoaded && !isQuittingGame;
         }

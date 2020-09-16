@@ -1,15 +1,26 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using SaG.SaveSystem.Samples.Platformer2D.Triggers;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace SaG.SaveSystem.Samples.Platformer2D
 {
-    public static class Game
+    public static class GAME
     {
-        public static void Checkpoint()
+        /// <summary>
+        /// Method that represents entry point of your game.
+        /// It might be loader scene, main menu or DI installer - it doesn't matter.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void Initialize()
+        {
+            StartFromLastSave();
+        }
+        
+        public static void CheckpointSave()
         {
             Debug.Log("Checkpoint");
             var saveSystem = SaveSystemSingleton.Instance;
@@ -28,9 +39,9 @@ namespace SaG.SaveSystem.Samples.Platformer2D
                 saveSystem.FileUtility.DeleteFile("checkpoint");
         }
 
-        public static void KillPlayer()
+        public static void StartFromLastSave()
         {
-            Debug.Log("Kill Player");
+            Debug.Log("Restarting from last save...");
             var saveSystem = SaveSystemSingleton.Instance;
             var checkpoint = saveSystem.FileUtility.IsFileExist("checkpoint");
             var manualSave = saveSystem.FileUtility.IsFileExist("ManualSave");

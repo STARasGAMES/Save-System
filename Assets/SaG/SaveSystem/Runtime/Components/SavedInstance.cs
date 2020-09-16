@@ -32,7 +32,7 @@ namespace SaG.SaveSystem.Components
 
         private void OnDestroy()
         {
-            if (SaveMaster.DeactivatedObjectExplicitly(gameObject))
+            if (SaveMaster.IsGameObjectDisabledExplicitly(gameObject))
             {
                 if (removeData)
                 {
