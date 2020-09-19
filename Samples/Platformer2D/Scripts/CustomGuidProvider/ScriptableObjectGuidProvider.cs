@@ -19,6 +19,26 @@ namespace SaG.SaveSystem.Samples.Platformer2D.CustomGuidProvider
             return guidProviderAsset.GetStringGuid();
         }
 
+        private void Awake()
+        {
+            if (guidProviderAsset == null)
+            {
+                Debug.LogError("Guid provider asset is missing.", this);
+                return;
+            }
+
+            if (!GuidManagerSingleton.Add(guidProviderAsset.GetGuid(), gameObject))
+            {
+                Debug.LogError($"There are another game object with the same Guid: {guidProviderAsset.GetGuid()}. " +
+                               $"Guid provider asset: {guidProviderAsset.name}.", this);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            GuidManagerSingleton.Remove(guidProviderAsset.GetGuid());
+        }
+
 #if UNITY_EDITOR
         private void OnValidate()
         {
