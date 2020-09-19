@@ -1,4 +1,6 @@
-﻿using SaG.SaveSystem.Data;
+﻿using System.Collections.Generic;
+using SaG.SaveSystem.Data;
+using SaG.SaveSystem.SaveableRuntimeInstances;
 using UnityEngine;
 
 namespace SaG.SaveSystem.Core
@@ -10,7 +12,10 @@ namespace SaG.SaveSystem.Core
         
         /// <inheritdoc/>
         public FileUtility FileUtility { get; set; } = new FileUtility();
-        
+
+        /// <inheritdoc/>
+        public IRuntimeInstancesManager RuntimeInstancesManager { get; set; } = new RuntimeInstancesManager();
+
         /// <inheritdoc/>
         public void WriteStateToDisk(string name)
         {

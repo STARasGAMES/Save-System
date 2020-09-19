@@ -1,4 +1,5 @@
 ﻿using SaG.SaveSystem.Core;
+using SaG.SaveSystem.SaveableRuntimeInstances;
 using UnityEngine;
 
 namespace SaG.SaveSystem.Components
@@ -9,13 +10,14 @@ namespace SaG.SaveSystem.Components
     [AddComponentMenu("")]
     public class SavedInstance : MonoBehaviour
     {
-        private SaveInstanceManager instanceManager;
+        private ISceneRuntimeInstancesManager instanceManager;
         private Saveable saveable;
 
-        // By default, when destroyed, the saved instance will wipe itself from existance.
-        private bool removeData = true;
+        public Saveable Saveable => saveable;
 
-        public void Configure(Saveable saveable, SaveInstanceManager instanceManager)
+        public bool IsDestroying { get; private set; } = false;
+
+        public void Configure(Saveable saveable, ISceneRuntimeInstancesManager instanceManager)
         {
             this.saveable = saveable;
             this.instanceManager = instanceManager;
@@ -23,23 +25,32 @@ namespace SaG.SaveSystem.Components
 
         public void Destroy()
         {
-            saveable.ManualSaveLoad = true;
-            removeData = false;
-            SaveSystemSingleton.Instance.GameStateManager.UnregisterContainer(saveable, true);
-            //SaveMaster.RemoveListener(saveable);
-            Destroy(gameObject);
+            if (!IsDestroying)
+            {
+                IsDestroying = true;
+                Destroy(gameObject);
+                DestroyInternal();
+            }
         }
 
         private void OnDestroy()
         {
-            if (SaveMaster.IsGameObjectDisabledExplicitly(gameObject))
+            if (!IsDestroying)
             {
-                if (removeData)
-                {
-                    SaveMaster.WipeSaveable(saveable);
-                    instanceManager.DestroyObject(this, saveable);
-                }
+                IsDestroying = true;
+                DestroyInternal();
             }
+        }
+
+        private void DestroyInternal()
+        {
+            saveable.ManualSaveLoad = true;
+            // if gameObject destroyed by game logic (by calling Object.Destroy(go)), then we don't need information about it anymore.
+            bool destroySaveData = SaveMaster.IsGameObjectDisabledExplicitly(gameObject);
+            if (destroySaveData)
+                SaveSystemSingleton.Instance.GameStateManager.WipeSaveable(saveable);
+            SaveSystemSingleton.Instance.GameStateManager.UnregisterSaveable(saveable, !destroySaveData);
+            instanceManager.Destroy(this);
         }
     }
 }

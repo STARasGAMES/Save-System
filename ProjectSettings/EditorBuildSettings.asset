@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/SaG/SaveSystem/Samples/Platformer2D/Scenes/Level3.unity
     guid: ca7bf07c9c6ce214aaf725f34f352956
+  - enabled: 1
+    path: Assets/SaG/SaveSystem/Samples/RuntimeSpawn/RuntimeSpawnSampleScene.unity
+    guid: 097fec734224a944bb8fe4c6124cbde5
   m_configObjects: {}

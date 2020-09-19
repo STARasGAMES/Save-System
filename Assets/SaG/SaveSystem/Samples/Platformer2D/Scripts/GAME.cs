@@ -14,7 +14,7 @@ namespace SaG.SaveSystem.Samples.Platformer2D
         /// Method that represents entry point of your game.
         /// It might be loader scene, main menu or DI installer - it doesn't matter.
         /// </summary>
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        //[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] // todo this attribute breaks loading other scene
         private static void Initialize()
         {
             StartFromLastSave();
@@ -66,7 +66,7 @@ namespace SaG.SaveSystem.Samples.Platformer2D
                 throw new ArgumentException($"Trying to load game from file that does not exist: '{fileName}'",nameof(fileName));
             
             saveSystem.ReadStateFromDisk(fileName);
-            saveSystem.GameStateManager.LoadContainer(saveSystem.GameStateManager.DefaultContainer);
+            saveSystem.GameStateManager.LoadSaveable(saveSystem.GameStateManager.DefaultContainer);
             var sceneName = saveSystem.GameStateManager.DefaultContainer.Get<string>("scene");
             // We need to set this to true, so that Saveables from unloading scene
             // will not save their state into current GameState. We don't need state where player is dead:)

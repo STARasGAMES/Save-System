@@ -65,7 +65,7 @@ namespace SaG.SaveSystem.Components
 
             if (!manualSaveLoad)
             {
-                SaveSystemSingleton.Instance.GameStateManager.RegisterContainer(this);
+                SaveSystemSingleton.Instance.GameStateManager.RegisterSaveable(this);
             }
         }
 
@@ -73,7 +73,7 @@ namespace SaG.SaveSystem.Components
         {
             if (!manualSaveLoad)
             {
-                SaveSystemSingleton.Instance.GameStateManager.UnregisterContainer(this);
+                SaveSystemSingleton.Instance.GameStateManager.UnregisterSaveable(this);
             }
 
 #if UNITY_EDITOR
@@ -123,7 +123,7 @@ namespace SaG.SaveSystem.Components
             }
 
             // Load it again, to ensure all ISaveableComponent interfaces are updated.
-            SaveSystemSingleton.Instance.GameStateManager.LoadContainer(this);
+            SaveSystemSingleton.Instance.GameStateManager.LoadSaveable(this);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace SaG.SaveSystem.Components
             if (reloadData)
             {
                 // Load it again, to ensure all ISaveableComponent interface are updated.
-                SaveSystemSingleton.Instance.GameStateManager.LoadContainer(this);
+                SaveSystemSingleton.Instance.GameStateManager.LoadSaveable(this);
             }
         }
 
@@ -211,7 +211,14 @@ namespace SaG.SaveSystem.Components
                     }
 
                     var data = getSaveableComponent.Save();
-                    _container.Set(getIdentification, data);
+                    if (data == null)
+                    {
+                        Debug.LogError($"Saveable component returned null data. Id: {getIdentification}", gameObject);
+                    }
+                    else
+                    {
+                        _container.Set(getIdentification, data);
+                    }
                 }
             }
 

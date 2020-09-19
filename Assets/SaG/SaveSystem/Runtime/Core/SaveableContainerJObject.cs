@@ -50,6 +50,10 @@ namespace SaG.SaveSystem.Core
         
         public void Set<T>(string key, T value)
         {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentNullException(key);
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
             _state[key] = JToken.FromObject(value, Serializer);
         }
 

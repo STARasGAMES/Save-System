@@ -42,8 +42,8 @@ namespace SaG.SaveSystem.Samples.Tests
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
 
-            SaveMaster.SyncSave();
-
+            // SaveMaster.SyncSave();
+            
             stopWatch.Stop();
             displayText.text = stopWatch.Elapsed.TotalMilliseconds.ToString();
         }
@@ -53,7 +53,7 @@ namespace SaG.SaveSystem.Samples.Tests
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
 
-            SaveMaster.SyncLoad();
+            // SaveMaster.SyncLoad();
 
             stopWatch.Stop();
             displayText.text = stopWatch.Elapsed.TotalMilliseconds.ToString();
@@ -75,8 +75,8 @@ namespace SaG.SaveSystem.Samples.Tests
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
 
-            SaveMaster.ClearSlot();
-            SaveMaster.SetSlot(0, true);
+            // SaveMaster.ClearSlot();
+            // SaveMaster.SetSlot(0, true);
 
             stopWatch.Stop();
             displayText.text = stopWatch.Elapsed.TotalMilliseconds.ToString();
@@ -101,7 +101,7 @@ namespace SaG.SaveSystem.Samples.Tests
             int saveableCount = saveables.Length;
             for (int i = 0; i < saveableCount; i++)
             {
-                SaveMaster.WipeSaveable(saveables[i]);
+                // SaveMaster.WipeSaveable(saveables[i]);
             }
 
             stopWatch.Stop();
@@ -115,7 +115,7 @@ namespace SaG.SaveSystem.Samples.Tests
             displayText.text = "Wiped save, created new save at slot 0";
             lastestSpeed = 0;
 
-            SaveMaster.SetSlot(0, true);
+            // SaveMaster.SetSlot(0, true);
         }
     }
 }

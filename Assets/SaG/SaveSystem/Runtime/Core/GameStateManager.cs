@@ -8,7 +8,7 @@ namespace SaG.SaveSystem.Core
 {
     public class GameStateManager : IGameStateManager
     {
-        private readonly IList<ISaveableContainer> containers;
+        private readonly IList<ISaveable> saveables;
         public IGameState GameState { get; set; }
         
         public bool IsApplicationQuitting { get; private set; }
@@ -17,10 +17,10 @@ namespace SaG.SaveSystem.Core
 
         public GameStateManager()
         {
-            containers = new List<ISaveableContainer>();
+            saveables = new List<ISaveable>();
             GameState = new GameState();
             DefaultContainer = new SaveableContainerJObject("DefaultContainer");
-            RegisterContainer(DefaultContainer);
+            RegisterSaveable(DefaultContainer);
             IsApplicationQuitting = false;
             Application.quitting += () => IsApplicationQuitting = true;
         }
@@ -44,9 +44,9 @@ namespace SaG.SaveSystem.Core
         public void SynchronizeState()
         {
             StateSynchronizing?.Invoke(this, EventArgs.Empty);
-            foreach (var container in containers)
+            foreach (var container in saveables)
             {
-                SaveContainer(container);
+                SaveSaveable(container);
             }
             StateSynchronized?.Invoke(this, EventArgs.Empty);
         }
@@ -55,55 +55,55 @@ namespace SaG.SaveSystem.Core
         public void LoadState()
         {
             StateLoading?.Invoke(this, EventArgs.Empty);
-            foreach (var container in containers)
+            foreach (var container in saveables)
             {
-                LoadContainer(container);
+                LoadSaveable(container);
             }
             StateLoaded?.Invoke(this, EventArgs.Empty);
         }
 
         /// <inheritdoc/>
-        public void RegisterContainer(ISaveableContainer saveableContainer, bool autoLoad = true)
+        public void RegisterSaveable(ISaveable saveable, bool autoLoad = true)
         {
-            if (saveableContainer == null)
-                throw new ArgumentNullException(nameof(saveableContainer));
-            if (containers.Contains(saveableContainer))
-                throw new ArgumentException("Collection already has this container", nameof(saveableContainer));
-            containers.Add(saveableContainer);
-            LoadContainer(saveableContainer);
+            if (saveable == null)
+                throw new ArgumentNullException(nameof(saveable));
+            if (saveables.Contains(saveable))
+                throw new ArgumentException("Collection already has this container", nameof(saveable));
+            saveables.Add(saveable);
+            LoadSaveable(saveable);
         }
 
         /// <inheritdoc/>
-        public bool UnregisterContainer(ISaveableContainer saveableContainer, bool autoSave = false)
+        public bool UnregisterSaveable(ISaveable saveable, bool autoSave = true)
         {
-            if (saveableContainer == null)
-                throw new ArgumentNullException(nameof(saveableContainer));
+            if (saveable == null)
+                throw new ArgumentNullException(nameof(saveable));
             if (autoSave)
-                SaveContainer(saveableContainer); // todo decide to save container or not when it is not registered?
-            return containers.Remove(saveableContainer);
+                SaveSaveable(saveable); // todo decide to save container or not when it is not registered?
+            return saveables.Remove(saveable);
         }
 
         /// <inheritdoc/>
-        public void SaveContainer(ISaveableContainer saveableContainer)
+        public void SaveSaveable(ISaveable saveable)
         {
             if (IsIgnoringStateSynchronization)
                 return;
-            GameState.Set(saveableContainer.Id, saveableContainer.Save(), saveableContainer.Context);
+            GameState.Set(saveable.Id, saveable.Save(), saveable.Context);
         }
 
         /// <inheritdoc/>
-        public void LoadContainer(ISaveableContainer saveableContainer)
+        public void LoadSaveable(ISaveable saveable)
         {
-            if (GameState.TryGetValue(saveableContainer.Id, out var value))
+            if (GameState.TryGetValue(saveable.Id, out var value))
             {
-                saveableContainer.Load((JObject) value);
+                saveable.Load((JObject) value);
             }
         }
 
         /// <inheritdoc/>
-        public bool WipeContainer(ISaveableContainer saveableContainer)
+        public bool WipeSaveable(ISaveable saveable)
         {
-            return GameState.Remove(saveableContainer.Id);
+            return GameState.Remove(saveable.Id);
         }
     }
 }
