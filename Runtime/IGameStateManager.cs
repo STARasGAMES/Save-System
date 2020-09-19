@@ -57,39 +57,39 @@ namespace SaG.SaveSystem
         void LoadState();
 
         /// <summary>
-        /// Registers container to auto synchronization with game state.
+        /// Registers saveable to auto synchronization with game state.
         /// </summary>
-        /// <param name="saveableContainer">Saveable container</param>
+        /// <param name="saveable"></param>
         /// <param name="autoLoad">Indicates whether container will be loaded right after registration.</param>
-        void RegisterContainer(ISaveableContainer saveableContainer, bool autoLoad = true);
+        void RegisterSaveable(ISaveable saveable, bool autoLoad = true);
 
         /// <summary>
-        /// Unregisters container from auto synchronization with game state.
+        /// Unregisters saveable from auto synchronization with game state.
         /// Note: no data will be removed.
         /// </summary>
-        /// <param name="saveableContainer">Saveable container</param>
+        /// <param name="saveable"></param>
         /// <param name="autoSave">Indicates whether container will be saved right before unregistration.</param>
         /// <returns><c>true</c> if container is successfully found and removed; otherwise, <c>false</c>.</returns>
-        bool UnregisterContainer(ISaveableContainer saveableContainer, bool autoSave = true);
+        bool UnregisterSaveable(ISaveable saveable, bool autoSave = true);
 
         /// <summary>
-        /// Saves container into currently active game state.
+        /// Saves saveable into currently active game state.
         /// </summary>
-        /// <param name="saveableContainer">Saveable container</param>
-        void SaveContainer(ISaveableContainer saveableContainer);
+        /// <param name="saveable"></param>
+        void SaveSaveable(ISaveable saveable);
 
         /// <summary>
-        /// Loads container from currently active game state.
+        /// Loads savealbe from currently active game state.
         /// </summary>
-        /// <param name="saveableContainer">Saveable container</param>
+        /// <param name="saveable"></param>
         /// <remarks>This will not call <c>Load()</c> method on saveable container if there is no data about specified container.</remarks>
-        void LoadContainer(ISaveableContainer saveableContainer);
+        void LoadSaveable(ISaveable saveable);
 
         /// <summary>
-        /// Wipes all data associated with specified container in currently active game state.
+        /// Wipes all data associated with specified saveable in currently active game state.
         /// </summary>
-        /// <param name="saveableContainer">Saveable container</param>
+        /// <param name="saveable"></param>
         /// <returns><c>true</c> if data successfully found and wiped; otherwise, <c>false</c>.</returns>
-        bool WipeContainer(ISaveableContainer saveableContainer);
+        bool WipeSaveable(ISaveable saveable);
     }
 }

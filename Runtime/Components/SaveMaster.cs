@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using SaG.GuidReferences;
 using SaG.SaveSystem.Components;
 using SaG.SaveSystem.Data;
+using SaG.SaveSystem.SaveableRuntimeInstances;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -26,8 +27,8 @@ namespace SaG.SaveSystem.Core
         private static Dictionary<string, int> loadedSceneNames = new Dictionary<string, int>();
         private static HashSet<int> duplicatedSceneHandles = new HashSet<int>();
 
-        private static Dictionary<int, SaveInstanceManager> saveInstanceManagers
-            = new Dictionary<int, SaveInstanceManager>();
+        private static Dictionary<int, SceneRuntimeInstancesManager> saveInstanceManagers
+            = new Dictionary<int, SceneRuntimeInstancesManager>();
 
         private static bool isQuittingGame;
 
@@ -38,7 +39,7 @@ namespace SaG.SaveSystem.Core
         // All listeners
         private static List<Saveable> saveables = new List<Saveable>();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        //[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void CreateInstance()
         {
             GameObject saveMasterObject = new GameObject("Save Master");
@@ -115,7 +116,7 @@ namespace SaG.SaveSystem.Core
         /// <param name="scene">  </param>
         /// <param name="id"> Add a extra indentification for the scene. Useful for duplicated scenes. </param>
         /// <returns></returns>
-        public static SaveInstanceManager SpawnInstanceManager(Scene scene, string id = "")
+        public static SceneRuntimeInstancesManager SpawnInstanceManager(Scene scene, string id = "")
         {
             // Safety precautions.
             if (!string.IsNullOrEmpty(id) && duplicatedSceneHandles.Contains(scene.GetHashCode()))
@@ -134,7 +135,7 @@ namespace SaG.SaveSystem.Core
             var go = new GameObject("Save Instance Manager");
             go.gameObject.SetActive(false);
 
-            var instanceManager = go.AddComponent<SaveInstanceManager>();
+            var instanceManager = go.AddComponent<SceneRuntimeInstancesManager>();
             var saveable = go.AddComponent<Saveable>();
             var guidComponent = go.GetComponent<GuidComponent>() ?? go.AddComponent<GuidComponent>();
             SceneManager.MoveGameObjectToScene(go, scene);
@@ -190,135 +191,6 @@ namespace SaG.SaveSystem.Core
         public static bool IsSlotUsed(int slot)
         {
             return SaveFileUtility.IsSlotUsed(slot);
-        }
-
-        /// <summary>
-        /// Tries to set the current slot to the last used one.
-        /// </summary>
-        /// <param name="notifyListeners"> Should a load event be send to all active Saveables?</param>
-        /// <returns> If it was able to set the slot to the last used one </returns>
-        public static bool SetSlotToLastUsedSlot(bool notifyListeners)
-        {
-            int lastUsedSlot = PlayerPrefs.GetInt("SM-LastUsedSlot", -1);
-
-            if (lastUsedSlot == -1)
-            {
-                return false;
-            }
-            else
-            {
-                SetSlot(lastUsedSlot, notifyListeners);
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Attempts to set the slot to the first unused slot. Useful for creating a new game.
-        /// </summary>
-        /// <param name="notifyListeners"></param>
-        /// <param name="slot"></param>
-        /// <returns></returns>
-        public static bool SetSlotToNewSlot(bool notifyListeners, out int slot)
-        {
-            int availableSlot = SaveFileUtility.GetAvailableSaveSlot();
-
-            if (availableSlot == -1)
-            {
-                slot = -1;
-                return false;
-            }
-            else
-            {
-                SetSlot(availableSlot, notifyListeners);
-                slot = availableSlot;
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Ensure save master has not been set to any slot
-        /// </summary>
-        public static void ClearSlot(bool clearAllListeners = true, bool notifySave = true)
-        {
-            if (clearAllListeners)
-            {
-                ClearListeners(notifySave);
-            }
-
-            activeSlot = -1;
-            _activeGameState = null;
-        }
-
-        /// <summary>
-        /// Sets the slot, but does not save the data in the previous slot. This is useful if you want to
-        /// save the active game to a new save slot. Like in older games such as Half-Life.
-        /// </summary>
-        /// <param name="slot"> Slot to switch towards, and copy the current save to </param>
-        /// <param name="saveGame"> Set this if you want to overwrite a specific save file </param>
-        public static void SetSlotAndCopyActiveSave(int slot)
-        {
-            SlotChanging.Invoke(slot);
-
-            activeSlot = slot;
-            _activeGameState = SaveFileUtility.LoadSave(slot, true);
-
-            SyncReset();
-            SyncSave();
-
-            SlotChanged.Invoke(slot);
-        }
-
-        /// <summary>
-        /// Set the active save slot. (Do note: If you don't want to auto save on slot switch, you can change this in the save settings)
-        /// </summary>
-        /// <param name="slot"> Target save slot </param>
-        /// <param name="reloadSaveables"> Send a message to all saveables to load the new save file </param>
-        /// <param name="gameState">Directly specify SaveGame to load after slot change.</param>
-        /// <param name="autoSaveOnSlotSwitch">If set to true then game will be saved in current slot before slot change.</param>
-        /// <param name="cleanSavedPrefabsOnSlotSwitch">Destroy all currently active saved prefabs.</param>
-        public static void SetSlot(int slot, bool reloadSaveables, GameState gameState = null,
-            bool? autoSaveOnSlotSwitch = null, bool? cleanSavedPrefabsOnSlotSwitch = null)
-        {
-            if (slot < 0 || slot > SaveSettings.Get().maxSaveSlotCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(slot), "SaveMaster: Attempted to set illegal slot.");
-            }
-
-            if (activeSlot == slot && gameState == null)
-            {
-                Debug.LogWarning("Already loaded this slot.");
-                return;
-            }
-
-            // Ensure the current game is saved, and write it to disk, if that is wanted behaviour.
-            autoSaveOnSlotSwitch = autoSaveOnSlotSwitch ?? SaveSettings.Get().autoSaveOnSlotSwitch;
-            if (autoSaveOnSlotSwitch.Value && _activeGameState != null)
-            {
-                WriteActiveSaveToDisk();
-            }
-
-            cleanSavedPrefabsOnSlotSwitch =
-                cleanSavedPrefabsOnSlotSwitch ?? SaveSettings.Get().cleanSavedPrefabsOnSlotSwitch;
-            if (cleanSavedPrefabsOnSlotSwitch.Value)
-            {
-                ClearActiveSavedPrefabs();
-            }
-
-            SlotChanging.Invoke(slot);
-
-            activeSlot = slot;
-            _activeGameState = gameState ?? SaveFileUtility.LoadSave(slot, true);
-
-            if (reloadSaveables)
-            {
-                SyncLoad();
-            }
-
-            SyncReset();
-
-            PlayerPrefs.SetInt("SM-LastUsedSlot", slot);
-
-            SlotChanged.Invoke(slot);
         }
 
         public static DateTime GetSaveCreationTime(int slot)
@@ -397,151 +269,12 @@ namespace SaG.SaveSystem.Core
         /// </summary>
         public static void WriteActiveSaveToDisk()
         {
-            OnWritingToDiskBegin.Invoke(activeSlot);
-
-            if (_activeGameState != null)
-            {
-                for (int i = 0; i < saveables.Count; i++)
-                {
-                    var saveable = saveables[i];
-                    _activeGameState.Set(saveable.Id, saveable.Save(),
-                        saveable.gameObject.scene.name); // todo scene name (or better context?)
-                }
-
-                SaveFileUtility.WriteSave(_activeGameState, activeSlot);
-            }
-            else
-            {
-                if (Time.frameCount != 0)
-                {
-                    Debug.Log("No save game is currently loaded... So we cannot save it");
-                }
-            }
-
-            OnWritingToDiskDone.Invoke(activeSlot);
+            throw new NotImplementedException();
         }
 
         public static void LoadActiveSaveFromDisk(bool reloadSaveables = true)
         {
-            _activeGameState = SaveFileUtility.LoadSave(activeSlot, true);
-            if (reloadSaveables)
-            {
-                SyncLoad();
-            }
-        }
-
-        /// <summary>
-        /// Wipe all data of a specified scene. This is useful if you want to reset the saved state of a specific scene.
-        /// Use clearSceneSaveables = true, in case you want to clear it before switching scenes.
-        /// </summary>
-        /// <param name="name"> Name of the scene </param>
-        /// <param name="clearSceneSaveables"> Scan and wipe for any saveable in the scene? Else they might save again upon destruction.
-        /// You can leave this off for performance if you are certain no active saveables are in the scene.</param>
-        public static void WipeSceneData(string name, bool clearSceneSaveables = true)
-        {
-            if (_activeGameState == null)
-            {
-                throw new NoNullAllowedException("Failed to wipe scene data: No save game loaded.");
-            }
-
-            if (clearSceneSaveables)
-            {
-                int listenerCount = saveables.Count;
-                for (int i = listenerCount - 1; i >= 0; i--)
-                {
-                    if (saveables[i].gameObject.scene.name == name)
-                    {
-                        WipeSaveable(saveables[i]);
-                    }
-                }
-            }
-            // todo game state manager.WipeContext
-            //_activeGameState.WipeSceneData(name);
-        }
-
-        /// <summary>
-        /// Removes all save data related to specified saveable.
-        /// This is useful for dynamic saved objects. So they get erased
-        /// from the save file permanently.
-        /// </summary>
-        /// <param name="saveable"></param>
-        public static void WipeSaveable(Saveable saveable)
-        {
-            if (_activeGameState == null)
-            {
-                Debug.LogError("Failed to wipe saveable data: No save game loaded.");
-                return;
-            }
-
-            RemoveListener(saveable, false);
-            _activeGameState.Remove(saveable.Id);
-        }
-
-        /// <summary>
-        /// Clears all saveable components that are listening to the Save Master
-        /// </summary>
-        /// <param name="saveData">Save before removing from notification list?</param>
-        public static void ClearListeners(bool saveData)
-        {
-            if (saveData && _activeGameState != null)
-            {
-                int saveableCount = saveables.Count;
-                for (int i = saveableCount - 1; i >= 0; i--)
-                {
-                    var saveable = saveables[i];
-                    _activeGameState.Set(saveable.Id, saveable.Save(), saveable.gameObject.scene.name); // todo scene name
-                }
-            }
-
-            saveables.Clear();
-        }
-
-        /// <summary>
-        /// Useful in case components have been added to a saveable.
-        /// </summary>
-        /// <param name="saveable"></param>
-        public static void ReloadListener(Saveable saveable)
-        {
-            if (_activeGameState.TryGetValue(saveable.Id, out var data))
-            {
-                saveable.Load((JObject) data);
-            }
-        }
-
-        /// <summary>
-        /// Add saveable to the notification list. So it can receive load/save requests.
-        /// </summary>
-        /// <param name="saveable"> Reference to the saveable that listens to the Save Master </param>
-        /// <param name="loadData"> Auto-load added saveable </param>
-        public static void AddListener(Saveable saveable, bool loadData = true)
-        {
-            if (saveable == null)
-            {
-                Debug.LogError("Saveable is NULL");
-                return;
-            }
-
-            saveables.Add(saveable);
-            if (loadData && _activeGameState != null)
-            {
-                ReloadListener(saveable);
-            }
-        }
-
-        /// <summary>
-        /// Remove saveable from the notification list. So it no longer receives load/save requests.
-        /// </summary>
-        /// <param name="saveable"> Reference to the saveable that listens to the Save Master </param>
-        /// /// <param name="saveData"> Should it try to save the saveable data to the save file when being removed? </param>
-        public static void RemoveListener(Saveable saveable, bool saveData = true)
-        {
-            if (saveables.Remove(saveable))
-            {
-                if (saveData && saveable != null && _activeGameState != null)
-                {
-                    _activeGameState.Set(saveable.Id, saveable.Save(), saveable.gameObject.scene.name); // todo
-                }
-            }
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -565,67 +298,6 @@ namespace SaG.SaveSystem.Core
         public static void DeleteSave()
         {
             DeleteSave(activeSlot);
-        }
-
-        /// <summary>
-        /// Sends request to all saveables to store data to the active save game
-        /// </summary>
-        public static void SyncSave()
-        {
-            if (_activeGameState == null)
-            {
-                throw new NoNullAllowedException("SaveMaster Request Save Failed: " +
-                                                 "No active SaveGame has been set. Be sure to call SetSlot(index)");
-            }
-
-            int count = saveables.Count;
-
-            for (int i = 0; i < count; i++)
-            {
-                var saveable = saveables[i];
-                _activeGameState.Set(saveable.Id, saveable.Save(), saveable.gameObject.scene.name);
-            }
-        }
-
-        /// <summary>
-        /// Sends request to all saveables to load data from the active save game
-        /// </summary>
-        public static void SyncLoad()
-        {
-            if (_activeGameState == null)
-            {
-                throw new NoNullAllowedException("SaveMaster Request Load Failed: " +
-                                                 "No active SaveGame has been set. Be sure to call SetSlot(index)");
-            }
-
-            int count = saveables.Count;
-
-            for (int i = 0; i < count; i++)
-            {
-                var saveable = saveables[i];
-                if (_activeGameState.TryGetValue(saveable.Id, out var data))
-                {
-                    saveable.Load((JObject) data); // todo
-                }
-            }
-        }
-
-        /// <summary>
-        /// Resets the state of the saveables. As if they have never loaded or saved.
-        /// </summary>
-        public static void SyncReset()
-        {
-            if (_activeGameState == null)
-            {
-                throw new NoNullAllowedException("No active SaveGame has been set. Be sure to call SetSlot(index)");
-            }
-
-            int count = saveables.Count;
-
-            for (int i = 0; i < count; i++)
-            {
-                saveables[i].ResetState();
-            }
         }
 
         /// <summary>
@@ -657,13 +329,13 @@ namespace SaG.SaveSystem.Core
                 scene = SceneManager.GetActiveScene();
             }
 
-            SaveInstanceManager saveIM;
-            if (!saveInstanceManagers.TryGetValue(scene.GetHashCode(), out saveIM))
+            SceneRuntimeInstancesManager im;
+            if (!saveInstanceManagers.TryGetValue(scene.GetHashCode(), out im))
             {
-                saveIM = SpawnInstanceManager(scene);
+                im = SpawnInstanceManager(scene);
             }
 
-            return saveIM.SpawnObject(source, filePath).gameObject;
+            return im.Instantiate(filePath, TODO).gameObject;
         }
 
         /// <summary>
@@ -749,25 +421,6 @@ namespace SaG.SaveSystem.Core
             else return true;
         }
 
-        /// <summary>
-        /// Clean all currently saved prefabs. Useful when switching scenes.
-        /// </summary>
-        private static void ClearActiveSavedPrefabs()
-        {
-            int totalLoadedScenes = SceneManager.sceneCount;
-
-            for (int i = 0; i < totalLoadedScenes; i++)
-            {
-                Scene scene = SceneManager.GetSceneAt(i);
-                SaveInstanceManager saveIM;
-
-                if (saveInstanceManagers.TryGetValue(scene.GetHashCode(), out saveIM))
-                {
-                    saveIM.DestroyAllObjects();
-                }
-            }
-        }
-
         // Events
 
         /// <summary>
@@ -784,18 +437,6 @@ namespace SaG.SaveSystem.Core
         {
             get { return instance.onSlotChangeDone; }
             set { instance.onSlotChangeDone = value; }
-        }
-
-        public static Action<int> OnWritingToDiskBegin
-        {
-            get { return instance.onWritingToDiskBegin; }
-            set { instance.onWritingToDiskBegin = value; }
-        }
-
-        public static Action<int> OnWritingToDiskDone
-        {
-            get { return instance.onWritingToDiskDone; }
-            set { instance.onWritingToDiskDone = value; }
         }
 
         private Action<int> onSlotChangeBegin = delegate { };
@@ -819,7 +460,7 @@ namespace SaG.SaveSystem.Core
 
             if (settings.loadDefaultSlotOnStart)
             {
-                SetSlot(settings.defaultSlot, true);
+                // SetSlot(settings.defaultSlot, true);
             }
 
             if (settings.trackTimePlayed)
@@ -864,7 +505,7 @@ namespace SaG.SaveSystem.Core
 
                 if (Input.GetKeyDown(settings.wipeActiveSceneData))
                 {
-                    WipeSceneData(SceneManager.GetActiveScene().name);
+                    // WipeSceneData(SceneManager.GetActiveScene().name);
                 }
 
                 if (Input.GetKeyDown(settings.saveAndWriteToDiskKey))
@@ -884,7 +525,7 @@ namespace SaG.SaveSystem.Core
                     var stopWatch = new System.Diagnostics.Stopwatch();
                     stopWatch.Start();
 
-                    SyncSave();
+                    // SyncSave();
 
                     stopWatch.Stop();
                     Debug.Log(string.Format("Synced (Save) objects. MS: {0}",
@@ -896,7 +537,7 @@ namespace SaG.SaveSystem.Core
                     var stopWatch = new System.Diagnostics.Stopwatch();
                     stopWatch.Start();
 
-                    SyncLoad();
+                    // SyncLoad();
 
                     stopWatch.Stop();
                     Debug.Log(string.Format("Synced (Load) objects. MS: {0}",

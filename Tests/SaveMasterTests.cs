@@ -15,22 +15,16 @@ namespace SaG.SaveSystem.Tests
         [SetUp]
         public void SetUp()
         {
-            if (SaveMaster.IsSlotUsed(46))
-                SaveMaster.DeleteSave(46);
-            if (SaveMaster.IsSlotUsed(47))
-                SaveMaster.DeleteSave(47);
-            SaveMaster.SetSlot(47, false);
+            // if (SaveMaster.IsSlotUsed(46))
+            //     SaveMaster.DeleteSave(46);
+            // if (SaveMaster.IsSlotUsed(47))
+            //     SaveMaster.DeleteSave(47);
+            // SaveMaster.SetSlot(47, false);
         }
 
         [TearDown]
         public void TearDownScene()
         {
-            SaveMaster.WipeSceneData("Global");
-            SaveMaster.WipeSceneData(Object.FindObjectOfType<Transform>().gameObject.scene.name);
-            if (SaveMaster.IsSlotUsed(46))
-                SaveMaster.DeleteSave(46);
-            if (SaveMaster.IsSlotUsed(47))
-                SaveMaster.DeleteSave(47);
         }
 
         [Test]
@@ -39,7 +33,7 @@ namespace SaG.SaveSystem.Tests
             SaveMaster.SetString("test_string_id", "test_string_value");
             SaveMaster.SetFloat("test_float_id", 47.47f);
             SaveMaster.SetInt("test_int_id", 47);
-            SaveMaster.SyncSave();
+            // SaveMaster.SyncSave();
             SaveMaster.WriteActiveSaveToDisk();
             Assert.AreEqual("test_string_value", SaveMaster.GetString("test_string_id"));
             Assert.AreEqual(47.47f, SaveMaster.GetFloat("test_float_id"));
@@ -71,11 +65,11 @@ namespace SaG.SaveSystem.Tests
             mockSaveableComponent.MockSaveData = new MockSaveData {someData = "DATA"};
             saveable.AddSaveableComponent("mock_component_id", mockSaveableComponent, false);
             go.SetActive(true);
-            SaveMaster.SyncSave();
+            // SaveMaster.SyncSave();
             SaveMaster.WriteActiveSaveToDisk();
             yield return null;
             Assert.IsNull(mockSaveableComponent.LoadedSaveData);
-            SaveMaster.SyncLoad();
+            // SaveMaster.SyncLoad();
             Assert.AreEqual(((MockSaveData) mockSaveableComponent.MockSaveData).someData,
                 ((MockSaveData) mockSaveableComponent.LoadedSaveData).someData);
         }

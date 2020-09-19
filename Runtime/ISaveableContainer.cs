@@ -1,30 +1,6 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
-
-namespace SaG.SaveSystem
+﻿namespace SaG.SaveSystem
 {
-    public interface ISaveableContainer
+    public interface ISaveableContainer : ISaveable, IContainer
     {
-        string Id { get; }
-        
-        string Context { get; }
-
-        JObject Save();
-
-        void Load(JObject state);
-        
-        void Set<T>(string key, T value);
-
-        T Get<T>(string key);
-
-        object Get(string key, Type type);
-
-        bool TryGetValue(string key, out object value, Type type);
-
-        bool TryGetValue<T>(string key, out T value);
-
-        bool Remove(string key);
-
-        void Clear();
     }
 }
