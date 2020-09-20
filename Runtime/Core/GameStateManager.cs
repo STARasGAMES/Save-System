@@ -8,20 +8,27 @@ namespace SaG.SaveSystem.Core
 {
     public class GameStateManager : IGameStateManager
     {
-        private readonly IList<ISaveable> saveables;
+        private readonly IList<ISaveable> _saveables;
+        
+        /// <inheritdoc/>
         public IGameState GameState { get; set; }
         
+        /// <inheritdoc/>
         public bool IsApplicationQuitting { get; private set; }
-
+        
+        /// <inheritdoc/>
         public bool IsIgnoringStateSynchronization { get; set; }
+
+        private bool _isSynchronizingState;
 
         public GameStateManager()
         {
-            saveables = new List<ISaveable>();
+            _saveables = new List<ISaveable>();
             GameState = new GameState();
             DefaultContainer = new SaveableContainerJObject("DefaultContainer");
             RegisterSaveable(DefaultContainer);
             IsApplicationQuitting = false;
+            _isSynchronizingState = false;
             Application.quitting += () => IsApplicationQuitting = true;
         }
 
@@ -43,21 +50,36 @@ namespace SaG.SaveSystem.Core
         /// <inheritdoc/>
         public void SynchronizeState()
         {
-            StateSynchronizing?.Invoke(this, EventArgs.Empty);
-            foreach (var container in saveables)
+            try
             {
-                SaveSaveable(container);
+                StateSynchronizing?.Invoke(this, EventArgs.Empty);
+                _isSynchronizingState = true;
+                foreach (var saveable in _saveables)
+                {
+                    SaveSaveable(saveable);
+                }
+
+                StateSynchronized?.Invoke(this, EventArgs.Empty);
             }
-            StateSynchronized?.Invoke(this, EventArgs.Empty);
+            catch (Exception e)
+            {
+                Debug.LogError("Exception occured when synchronizing state.");
+                Debug.LogException(e);
+                throw;
+            }
+            finally
+            {
+                _isSynchronizingState = false;
+            }
         }
 
         /// <inheritdoc/>
         public void LoadState()
         {
             StateLoading?.Invoke(this, EventArgs.Empty);
-            foreach (var container in saveables)
+            for (int i = 0; i < _saveables.Count; i++)
             {
-                LoadSaveable(container);
+                LoadSaveable(_saveables[i]);
             }
             StateLoaded?.Invoke(this, EventArgs.Empty);
         }
@@ -65,22 +87,28 @@ namespace SaG.SaveSystem.Core
         /// <inheritdoc/>
         public void RegisterSaveable(ISaveable saveable, bool autoLoad = true)
         {
+            if (_isSynchronizingState)
+                throw new Exception($"Can't register saveables when synchronizing state. " +
+                                    $"Use {nameof(StateSynchronizing)} event to register saveables.");
             if (saveable == null)
                 throw new ArgumentNullException(nameof(saveable));
-            if (saveables.Contains(saveable))
+            if (_saveables.Contains(saveable))
                 throw new ArgumentException("Collection already has this container", nameof(saveable));
-            saveables.Add(saveable);
+            _saveables.Add(saveable);
             LoadSaveable(saveable);
         }
 
         /// <inheritdoc/>
         public bool UnregisterSaveable(ISaveable saveable, bool autoSave = true)
         {
+            if (_isSynchronizingState)
+                throw new Exception($"Can't unregister saveables when synchronizing state. " +
+                                    $"Use {nameof(StateSynchronizing)} event to unregister saveables.");
             if (saveable == null)
                 throw new ArgumentNullException(nameof(saveable));
             if (autoSave)
                 SaveSaveable(saveable); // todo decide to save container or not when it is not registered?
-            return saveables.Remove(saveable);
+            return _saveables.Remove(saveable);
         }
 
         /// <inheritdoc/>

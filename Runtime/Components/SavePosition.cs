@@ -12,32 +12,26 @@ namespace SaG.SaveSystem.Components
     [SaveableComponentId("position")]
     public class SavePosition : MonoBehaviour, ISaveableComponent
     {
-        Vector3 lastPosition;
-
-        [Serializable]
-        private struct SaveData
-        {
-            public Vector3 position;
-        }
+        Vector3 _lastPosition;
 
         public void Load(object data)
         {
-            var pos = ((SaveData)data).position;
+            var pos = (Vector3)data;
             transform.position = pos;
-            lastPosition = pos;
+            _lastPosition = pos;
         }
 
-        public Type SaveDataType => typeof(SaveData);
+        public Type SaveDataType => typeof(Vector3);
 
         public object Save()
         {
-            lastPosition = transform.position;
-            return new SaveData { position = lastPosition };
+            _lastPosition = transform.position;
+            return _lastPosition;
         }
 
         public bool OnSaveCondition()
         {
-            return lastPosition != transform.position;
+            return _lastPosition != transform.position;
         }
     }
 }

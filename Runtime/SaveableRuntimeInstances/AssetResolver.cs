@@ -12,14 +12,21 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
             _assetIdToAssetMap = new Dictionary<string, GameObject>();
         }
 
-        public GameObject Resolve(string assetId, InstanceSource source)
+        public GameObject Resolve(string assetId, AssetSource source)
         {
-            // Implement more spawn methods here.
-            // Such as usage for Asset Bundles & Adressables
             switch (source)
             {
-                case InstanceSource.Resources:
-                    return Resources.Load(assetId) as GameObject;
+                case AssetSource.Resources:
+                    var res = Resources.Load(assetId) as GameObject;
+                    if (res == null)
+                        throw new Exception($"Can't resolve asset with id: '{assetId}' from Resources");
+                    return res;
+                case AssetSource.Registered:
+                    if (!_assetIdToAssetMap.TryGetValue(assetId, out var asset))
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(assetId), $"Can't resolve asset from registered assets.");
+                    }
+                    return asset;
                 default:
                     throw new NotImplementedException($"Instance source '{source.ToString()}' is not implemented.");
             }

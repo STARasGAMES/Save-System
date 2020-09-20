@@ -18,23 +18,25 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
     {
         private readonly Scene scene;
         private readonly IAssetResolver assetResolver;
+        private readonly IGameStateManager _gameStateManager;
         private Dictionary<SavedInstance, SpawnInfo> spawnInfo = new Dictionary<SavedInstance, SpawnInfo>();
         private HashSet<string> loadedIDs = new HashSet<string>();
 
-        private int changesMade;
+        private int _changesMade;
 
         public string Id { get; }
         public string Context { get; }
 
-        public SceneRuntimeInstancesManager(Scene scene, IAssetResolver assetResolver)
+        public SceneRuntimeInstancesManager(Scene scene, IAssetResolver assetResolver, IGameStateManager gameStateManager)
         {
             this.scene = scene;
             this.assetResolver = assetResolver;
+            _gameStateManager = gameStateManager;
             // todo
             Id = scene.path;
             Context = scene.path;
         }
-        
+
         [Serializable]
         private class SaveData
         {
@@ -44,26 +46,27 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
         [Serializable]
         private struct SpawnInfo
         {
-            public InstanceSource source;
+            public AssetSource source;
             public string assetId;
             public string guid;
         }
 
         #region ISceneRuntimeInstancesManager implementation
 
-        public GameObject Instantiate(string assetId, InstanceSource source = InstanceSource.Resources)
+        public GameObject Instantiate(string assetId, AssetSource source = AssetSource.Resources)
         {
-            changesMade++;
+            _changesMade++;
             var savedInstance = CreateSavedInstance(assetId, source);
             // we need to enable instance first so that GuidComponent will generate new Guid
             savedInstance.gameObject.SetActive(true);
             
-            var saveable = savedInstance.GetComponent<Saveable>();
+            var guidProvider = savedInstance.GetComponent<GuidComponent>();
+            guidProvider.RegenerateGuid();
 
             spawnInfo.Add(savedInstance, new SpawnInfo()
             {
                 assetId = assetId,
-                guid = saveable.Id,
+                guid = guidProvider.GetStringGuid(),
                 source = source
             });
 
@@ -83,7 +86,7 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
                 spawnInfo.Remove(savedInstance);
                 loadedIDs.Remove(savedInstance.Saveable.Id);
 
-                changesMade++;
+                _changesMade++;
             }
         }
         
@@ -118,9 +121,9 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
         
         public JObject Save()
         {
-            if (changesMade == 0 && lastSaveData != null)
+            if (_changesMade == 0 && lastSaveData != null)
                 return lastSaveData;
-            changesMade = 0;
+            _changesMade = 0;
 
             int c = spawnInfo.Count;
 
@@ -142,9 +145,9 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
 
         public void Load(JObject data)
         {
-            SaveData saveData = data.ToObject<SaveData>();
             lastSaveData = data;
-
+            var saveData = lastSaveData.ToObject<SaveData>();
+         
             if (saveData != null && saveData.spawns != null)
             {
                 int itemCount = saveData.spawns.Length;
@@ -181,10 +184,10 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
                 }
             }
         }
-
+        
         #endregion ISaveable implementation
         
-        private SavedInstance InstantiateInternal(string assetId, Guid guid, InstanceSource source)
+        private SavedInstance InstantiateInternal(string assetId, Guid guid, AssetSource source)
         {
             if (string.IsNullOrEmpty(assetId))
                 throw new ArgumentNullException(nameof(assetId));
@@ -203,7 +206,7 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
             return savedInstance;
         }
 
-        private SavedInstance CreateSavedInstance(string assetId, InstanceSource source)
+        private SavedInstance CreateSavedInstance(string assetId, AssetSource source)
         {
             var prefab = assetResolver.Resolve(assetId, source);
             // We will temporarily set the resource to disabled. Because we don't want to enable any
@@ -233,7 +236,6 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
             SavedInstance savedInstance = instance.AddComponent<SavedInstance>();
             savedInstance.Configure(saveable, this);
 
-            loadedIDs.Add(saveable.Id);
             return savedInstance;
         }
         
