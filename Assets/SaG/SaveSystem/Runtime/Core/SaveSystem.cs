@@ -8,14 +8,21 @@ namespace SaG.SaveSystem.Core
     public class SaveSystem : ISaveSystem
     {
         /// <inheritdoc/>
-        public IGameStateManager GameStateManager { get; set; } = new GameStateManager();
+        public IGameStateManager GameStateManager { get; set; }
         
         /// <inheritdoc/>
-        public FileUtility FileUtility { get; set; } = new FileUtility();
+        public FileUtility FileUtility { get; set; }
 
         /// <inheritdoc/>
-        public IRuntimeInstancesManager RuntimeInstancesManager { get; set; } = new RuntimeInstancesManager();
+        public IRuntimeInstancesManager RuntimeInstancesManager { get; set; }
 
+        public SaveSystem()
+        {
+            GameStateManager = new GameStateManager();
+            FileUtility = new FileUtility();
+            RuntimeInstancesManager = new RuntimeInstancesManager(GameStateManager, new AssetResolver());
+        }
+        
         /// <inheritdoc/>
         public void WriteStateToDisk(string name)
         {

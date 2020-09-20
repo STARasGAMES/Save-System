@@ -5,7 +5,7 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
 {
     public interface ISceneRuntimeInstancesManager : ISaveable
     {
-        GameObject Instantiate(string assetId, InstanceSource source);
+        GameObject Instantiate(string assetId, AssetSource source);
 
         void Destroy(SavedInstance savedInstance);
 

@@ -27,9 +27,6 @@ namespace SaG.SaveSystem.Core
         private static Dictionary<string, int> loadedSceneNames = new Dictionary<string, int>();
         private static HashSet<int> duplicatedSceneHandles = new HashSet<int>();
 
-        private static Dictionary<int, SceneRuntimeInstancesManager> saveInstanceManagers
-            = new Dictionary<int, SceneRuntimeInstancesManager>();
-
         private static bool isQuittingGame;
 
         // Active save game data
@@ -74,11 +71,6 @@ namespace SaG.SaveSystem.Core
                     loadedSceneNames.Remove(scene.name);
                 }
             }
-
-            if (saveInstanceManagers.ContainsKey(scene.GetHashCode()))
-            {
-                saveInstanceManagers.Remove(scene.GetHashCode());
-            }
         }
 
         private static void OnSceneLoaded(Scene scene, LoadSceneMode arg1)
@@ -96,63 +88,8 @@ namespace SaG.SaveSystem.Core
                 // These scenes are marked as duplicates. They need special treatment for saving.
                 duplicatedSceneHandles.Add(scene.GetHashCode());
             }
-
-            // Dont create save instance manager if there are no saved instances in the scene.
-            if (_activeGameState.ContainsId($"SaveMaster-{scene.name}-IM"))
-            {
-                return;
-            }
-
-            if (!saveInstanceManagers.ContainsKey(scene.GetHashCode()))
-            {
-                var instanceManager = SpawnInstanceManager(scene);
-            }
         }
 
-        /// <summary>
-        /// You only need to call this for scenes with a duplicate name. If you have a duplicate ID, you can then 
-        /// assign a ID to it. And it will save the data of the saveable to that ID instead.
-        /// </summary>
-        /// <param name="scene">  </param>
-        /// <param name="id"> Add a extra indentification for the scene. Useful for duplicated scenes. </param>
-        /// <returns></returns>
-        public static SceneRuntimeInstancesManager SpawnInstanceManager(Scene scene, string id = "")
-        {
-            // Safety precautions.
-            if (!string.IsNullOrEmpty(id) && duplicatedSceneHandles.Contains(scene.GetHashCode()))
-            {
-                duplicatedSceneHandles.Remove(scene.GetHashCode());
-            }
-
-            // Already exists
-            if (saveInstanceManagers.ContainsKey(scene.GetHashCode()))
-            {
-                throw new ArgumentException("There is already save instance manager in specified scene", nameof(scene));
-            }
-
-            // We spawn a game object seperately, so we can keep it disabled during configuration.
-            // This prevents any UnityEngine calls such as Awake or Start
-            var go = new GameObject("Save Instance Manager");
-            go.gameObject.SetActive(false);
-
-            var instanceManager = go.AddComponent<SceneRuntimeInstancesManager>();
-            var saveable = go.AddComponent<Saveable>();
-            var guidComponent = go.GetComponent<GuidComponent>() ?? go.AddComponent<GuidComponent>();
-            SceneManager.MoveGameObjectToScene(go, scene);
-
-            string saveID = string.IsNullOrEmpty(id) ? scene.name : string.Format("{0}-{1}", scene.name, id);
-
-            //saveable.Id = string.Format("{0}-{1}", "SaveMaster", saveID); // todo set id to guid?
-            guidComponent.RegenerateGuid();
-            saveable.AddSaveableComponent(guidComponent.GetGuid().ToString(), instanceManager, true);
-            saveInstanceManagers.Add(scene.GetHashCode(), instanceManager);
-
-            instanceManager.SceneID = saveID;
-            instanceManager.Saveable = saveable;
-
-            go.gameObject.SetActive(true);
-            return instanceManager;
-        }
 
         /// <summary>
         /// Returns if the object has been destroyed using GameObject.Destroy(obj).
@@ -298,44 +235,6 @@ namespace SaG.SaveSystem.Core
         public static void DeleteSave()
         {
             DeleteSave(activeSlot);
-        }
-
-        /// <summary>
-        /// Spawn a prefab that will be tracked & saved for a specific scene.
-        /// </summary>
-        /// <param name="source">Methodology to know where prefab came from </param>
-        /// <param name="filePath">This is used to retrieve the prefab again from the designated source. </param>
-        /// <param name="scene">Saved prefabs are bound to a specific scene. Easiest way to reference is by passing through (gameObject.scene).
-        /// By default is uses the active scene. </param>
-        /// <returns> Instance of saved prefab. </returns>
-        public static GameObject SpawnSavedPrefab(InstanceSource source, string filePath, Scene scene = default(Scene))
-        {
-            if (!HasActiveSaveLogAction("Spawning Object"))
-            {
-                return null;
-            }
-
-            // If no scene has been specified, it will use the current active scene.
-            if (scene == default(Scene))
-            {
-                scene = SceneManager.GetActiveScene();
-            }
-
-            if (duplicatedSceneHandles.Contains(scene.GetHashCode()))
-            {
-                Debug.Log(string.Format("Following scene has a duplicate name: {0}. " +
-                                        "Ensure to call SaveMaster.SpawnInstanceManager(scene, id) with a custom ID after spawning the scene.",
-                    scene.name));
-                scene = SceneManager.GetActiveScene();
-            }
-
-            SceneRuntimeInstancesManager im;
-            if (!saveInstanceManagers.TryGetValue(scene.GetHashCode(), out im))
-            {
-                im = SpawnInstanceManager(scene);
-            }
-
-            return im.Instantiate(filePath, TODO).gameObject;
         }
 
         /// <summary>

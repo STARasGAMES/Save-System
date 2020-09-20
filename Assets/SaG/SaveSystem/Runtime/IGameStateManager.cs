@@ -59,17 +59,19 @@ namespace SaG.SaveSystem
         /// <summary>
         /// Registers saveable to auto synchronization with game state.
         /// </summary>
-        /// <param name="saveable"></param>
+        /// <param name="saveable">Saveable</param>
         /// <param name="autoLoad">Indicates whether container will be loaded right after registration.</param>
+        /// <exception cref="Exception">thrown when state is synchronizing.</exception>
         void RegisterSaveable(ISaveable saveable, bool autoLoad = true);
 
         /// <summary>
         /// Unregisters saveable from auto synchronization with game state.
         /// Note: no data will be removed.
         /// </summary>
-        /// <param name="saveable"></param>
+        /// <param name="saveable">Saveable</param>
         /// <param name="autoSave">Indicates whether container will be saved right before unregistration.</param>
         /// <returns><c>true</c> if container is successfully found and removed; otherwise, <c>false</c>.</returns>
+        /// <exception cref="Exception">thrown when state is synchronizing.</exception>
         bool UnregisterSaveable(ISaveable saveable, bool autoSave = true);
 
         /// <summary>

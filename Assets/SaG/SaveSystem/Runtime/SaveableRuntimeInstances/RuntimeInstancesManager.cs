@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using Newtonsoft.Json.Linq;
-using SaG.GuidReferences;
-using SaG.SaveSystem.Components;
-using SaG.SaveSystem.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Object = UnityEngine.Object;
 
 namespace SaG.SaveSystem.SaveableRuntimeInstances
 {
@@ -27,7 +21,7 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
         
         #region IRuntimeInstancesManager implementation
 
-        public GameObject Instantiate(string assetId, InstanceSource source = InstanceSource.Resources, Scene scene = default)
+        public GameObject Instantiate(string assetId, AssetSource source = AssetSource.Resources, Scene scene = default)
         {
             if (scene == default)
                 scene = SceneManager.GetActiveScene();
@@ -50,9 +44,10 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
                 return;
             }
 
-            var instancesManager = new SceneRuntimeInstancesManager(scene, assetResolver);
-            gameStateManager.RegisterSaveable(instancesManager, true); // todo settings?
+            var instancesManager = new SceneRuntimeInstancesManager(scene, assetResolver, gameStateManager);
             sceneRuntimeInstancesManagers.Add(sceneHashCode, instancesManager);
+            
+            gameStateManager.RegisterSaveable(instancesManager, true); // todo settings?
         }
 
         private void SceneManagerOnSceneUnloaded(Scene scene)
@@ -61,7 +56,8 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
             if (sceneRuntimeInstancesManagers.TryGetValue(sceneHashCode, out var instancesManager))
             {
                 // todo dispose instances manager?
-                gameStateManager.UnregisterSaveable(instancesManager, true); // todo settings?
+                // important: we don't auto-save instanceManager because scene is completely unloaded and gone!
+                gameStateManager.UnregisterSaveable(instancesManager, false); 
                 sceneRuntimeInstancesManagers.Remove(sceneHashCode);
             }
         }
