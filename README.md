@@ -25,6 +25,8 @@ Install via git url by adding these entries into your **manifest.json**
 
 Guid References - https://github.com/STARasGAMES/Guid-References
 
+Newtonsoft.Json for Unity - https://github.com/jilleJr/Newtonsoft.Json-for-Unity
+
 ## Why one more save system?
 I've looked at existing solutions from GitHub and Asset Store. But nothing looks solid and convinient to use. Most of them provide the same functionality: ability to save/load values based on keys. I call them PlayerPrefs-like systems, cuz they literally do the same thing but write data to file. On top of that they can provide different serialization methods such as JSON and Binary. Only a few provide data encryption to prevent players from cheating. And that's it.
 
