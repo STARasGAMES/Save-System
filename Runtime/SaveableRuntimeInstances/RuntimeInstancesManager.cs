@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SaG.SaveSystem.GameStateManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,14 +8,15 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
 {
     public class RuntimeInstancesManager : IRuntimeInstancesManager
     {
-        private readonly IGameStateManager gameStateManager;
-        private readonly IAssetResolver assetResolver;
-        private readonly IDictionary<int, ISceneRuntimeInstancesManager> sceneRuntimeInstancesManagers;
+        private readonly IGameStateManager _gameStateManager;
+        private readonly IAssetResolver _assetResolver;
+        private readonly IDictionary<int, ISceneRuntimeInstancesManager> _sceneRuntimeInstancesManagers;
+        
         public RuntimeInstancesManager(IGameStateManager gameStateManager, IAssetResolver assetResolver)
         {
-            this.gameStateManager = gameStateManager;
-            this.assetResolver = assetResolver;
-            sceneRuntimeInstancesManagers = new Dictionary<int, ISceneRuntimeInstancesManager>();
+            _gameStateManager = gameStateManager;
+            _assetResolver = assetResolver;
+            _sceneRuntimeInstancesManagers = new Dictionary<int, ISceneRuntimeInstancesManager>();
             SceneManager.sceneLoaded += SceneManagerOnSceneLoaded;
             SceneManager.sceneUnloaded += SceneManagerOnSceneUnloaded;
         }
@@ -25,7 +27,7 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
         {
             if (scene == default)
                 scene = SceneManager.GetActiveScene();
-            if (!sceneRuntimeInstancesManagers.TryGetValue(scene.GetHashCode(), out var instancesManager))
+            if (!_sceneRuntimeInstancesManagers.TryGetValue(scene.GetHashCode(), out var instancesManager))
             {
                 throw new ArgumentException($"Trying to create object in scene that does not exist yet. Scene: '{scene.path}'", nameof(scene));
             }
@@ -38,27 +40,26 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
         private void SceneManagerOnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
         {
             int sceneHashCode = scene.GetHashCode();
-            if (sceneRuntimeInstancesManagers.ContainsKey(sceneHashCode))
+            if (_sceneRuntimeInstancesManagers.ContainsKey(sceneHashCode))
             {
                 Debug.LogError($"Duplicated scenes are not supported for now. Scene: '{scene.path}', hashCode: '{sceneHashCode}'");
                 return;
             }
 
-            var instancesManager = new SceneRuntimeInstancesManager(scene, assetResolver, gameStateManager);
-            sceneRuntimeInstancesManagers.Add(sceneHashCode, instancesManager);
+            var instancesManager = new SceneRuntimeInstancesManager(scene, _assetResolver);
+            _sceneRuntimeInstancesManagers.Add(sceneHashCode, instancesManager);
             
-            gameStateManager.RegisterSaveable(instancesManager, true); // todo settings?
+            _gameStateManager.RegisterSaveable(instancesManager, true); // todo settings?
         }
 
         private void SceneManagerOnSceneUnloaded(Scene scene)
         {
             int sceneHashCode = scene.GetHashCode();
-            if (sceneRuntimeInstancesManagers.TryGetValue(sceneHashCode, out var instancesManager))
+            if (_sceneRuntimeInstancesManagers.TryGetValue(sceneHashCode, out var instancesManager))
             {
-                // todo dispose instances manager?
-                // important: we don't auto-save instanceManager because scene is completely unloaded and gone!
-                gameStateManager.UnregisterSaveable(instancesManager, false); 
-                sceneRuntimeInstancesManagers.Remove(sceneHashCode);
+                // important: we don't auto-save instanceManager because now scene is completely unloaded and gone!
+                _gameStateManager.UnregisterSaveable(instancesManager, false); 
+                _sceneRuntimeInstancesManagers.Remove(sceneHashCode);
             }
         }
     }

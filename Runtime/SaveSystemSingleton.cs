@@ -2,6 +2,6 @@
 {
     public static class SaveSystemSingleton
     {
-        public static ISaveSystem Instance { get; set; } = new Core.SaveSystem();
+        public static ISaveSystem Instance { get; set; } = new SaveSystem();
     }
 }

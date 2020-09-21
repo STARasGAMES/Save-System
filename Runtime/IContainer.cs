@@ -14,6 +14,8 @@ namespace SaG.SaveSystem
 
         bool TryGetValue<T>(string key, out T value);
 
+        bool ContainsKey(string key);
+
         bool Remove(string key);
 
         void Clear();

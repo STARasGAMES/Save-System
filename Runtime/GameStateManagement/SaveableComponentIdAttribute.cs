@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SaG.SaveSystem.Components
+namespace SaG.SaveSystem.GameStateManagement
 {
     /// <summary>
     /// Attribute that allows to specify custom IDs for saveable components.

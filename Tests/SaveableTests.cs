@@ -1,7 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 using SaG.GuidReferences;
-using SaG.SaveSystem.Components;
+using SaG.SaveSystem.GameStateManagement;
 using UnityEngine;
 
 namespace SaG.SaveSystem.Tests

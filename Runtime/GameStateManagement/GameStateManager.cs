@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
-using SaG.SaveSystem.Data;
 using UnityEngine;
 
-namespace SaG.SaveSystem.Core
+namespace SaG.SaveSystem.GameStateManagement
 {
     public class GameStateManager : IGameStateManager
     {

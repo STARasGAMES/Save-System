@@ -1,4 +1,4 @@
-﻿using SaG.SaveSystem.Components;
+﻿using SaG.SaveSystem.GameStateManagement;
 using UnityEngine;
 
 namespace SaG.SaveSystem.SaveableRuntimeInstances

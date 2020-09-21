@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SaG.SaveSystem
+namespace SaG.SaveSystem.GameStateManagement
 {
     public interface IGameStateManager
     {

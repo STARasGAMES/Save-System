@@ -1,4 +1,5 @@
-﻿using SaG.SaveSystem.Components;
+﻿using SaG.SaveSystem.GameStateManagement;
+using SaG.SaveSystem.GameStateManagement.Components;
 using UnityEngine;
 
 namespace SaG.SaveSystem.Samples.Platformer2D

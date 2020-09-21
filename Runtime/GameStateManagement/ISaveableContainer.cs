@@ -1,4 +1,6 @@
-﻿namespace SaG.SaveSystem
+﻿using System;
+
+namespace SaG.SaveSystem.GameStateManagement
 {
     public interface ISaveableContainer : ISaveable, IContainer
     {

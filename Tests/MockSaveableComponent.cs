@@ -1,4 +1,5 @@
 ﻿using System;
+using SaG.SaveSystem.GameStateManagement;
 using UnityEngine;
 
 namespace SaG.SaveSystem.Tests

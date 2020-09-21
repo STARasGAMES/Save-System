@@ -1,8 +1,7 @@
-﻿using SaG.SaveSystem.Core;
-using SaG.SaveSystem.SaveableRuntimeInstances;
+﻿using SaG.SaveSystem.GameStateManagement;
 using UnityEngine;
 
-namespace SaG.SaveSystem.Components
+namespace SaG.SaveSystem.SaveableRuntimeInstances
 {
     /// <summary>
     /// Saved instances are objects that should respawn when they are not destroyed.
@@ -10,17 +9,17 @@ namespace SaG.SaveSystem.Components
     [AddComponentMenu("")]
     public class SavedInstance : MonoBehaviour
     {
-        private ISceneRuntimeInstancesManager instanceManager;
-        private Saveable saveable;
+        private ISceneRuntimeInstancesManager _instanceManager;
+        private Saveable _saveable;
 
-        public Saveable Saveable => saveable;
+        public Saveable Saveable => _saveable;
 
         public bool IsDestroying { get; private set; } = false;
 
         public void Configure(Saveable saveable, ISceneRuntimeInstancesManager instanceManager)
         {
-            this.saveable = saveable;
-            this.instanceManager = instanceManager;
+            _saveable = saveable;
+            _instanceManager = instanceManager;
         }
 
         public void Destroy()
@@ -44,13 +43,13 @@ namespace SaG.SaveSystem.Components
 
         private void DestroyInternal()
         {
-            saveable.ManualSaveLoad = true;
+            _saveable.ManualSaveLoad = true;
             // if gameObject destroyed by game logic (by calling Object.Destroy(go)), then we don't need information about it anymore.
-            bool destroySaveData = SaveMaster.IsGameObjectDisabledExplicitly(gameObject);
+            bool destroySaveData = Utilities.IsGameObjectDisabledExplicitly(gameObject);
             if (destroySaveData)
-                SaveSystemSingleton.Instance.GameStateManager.WipeSaveable(saveable);
-            SaveSystemSingleton.Instance.GameStateManager.UnregisterSaveable(saveable, !destroySaveData);
-            instanceManager.Destroy(this);
+                SaveSystemSingleton.Instance.GameStateManager.WipeSaveable(_saveable);
+            SaveSystemSingleton.Instance.GameStateManager.UnregisterSaveable(_saveable, !destroySaveData);
+            _instanceManager.Destroy(this);
         }
     }
 }

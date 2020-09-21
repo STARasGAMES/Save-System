@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace SaG.SaveSystem
+namespace SaG.SaveSystem.GameStateManagement
 {
     public interface ISaveable
     {
