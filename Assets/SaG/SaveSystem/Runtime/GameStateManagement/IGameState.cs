@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SaG.SaveSystem
+namespace SaG.SaveSystem.GameStateManagement
 {
     public interface IGameState
     {

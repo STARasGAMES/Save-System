@@ -1,8 +1,7 @@
 using System;
-using SaG.SaveSystem.Core;
 using UnityEngine;
 
-namespace SaG.SaveSystem.Components
+namespace SaG.SaveSystem.GameStateManagement.Components
 {
     /// <summary>
     /// Example class of how to store the visability of an object.
@@ -23,7 +22,7 @@ namespace SaG.SaveSystem.Components
         {
             // Ensure that it doesn't get toggled when the object is
             // deactivated /activated during scene load/unload
-            if (SaveMaster.IsGameObjectDisabledExplicitly(gameObject))
+            if (Utilities.IsGameObjectDisabledExplicitly(gameObject))
             {
                 isEnabled = false;
             }

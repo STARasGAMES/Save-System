@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace SaG.SaveSystem.Data
+namespace SaG.SaveSystem.GameStateManagement
 {
     /// <summary>
     /// Container for all game state data.

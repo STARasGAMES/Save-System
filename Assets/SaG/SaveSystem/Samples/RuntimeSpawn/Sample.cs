@@ -19,7 +19,7 @@ namespace SaG.SaveSystem.Samples.RuntimeSpawn
             var stopwatch = Stopwatch.StartNew();
             saveSystem.GameStateManager.SynchronizeState();
             Debug.Log($"Synchronized state in {stopwatch.ElapsedMilliseconds} ms.");
-            saveSystem.WriteStateToDisk("runtime_spawn_save_sample");
+            saveSystem.WriteStateToStorage("runtime_spawn_save_sample");
             stopwatch.Restart();
             Debug.Log($"Written state to disk in {stopwatch.ElapsedMilliseconds} ms.");
         }
@@ -28,7 +28,7 @@ namespace SaG.SaveSystem.Samples.RuntimeSpawn
         {
             var saveSystem = SaveSystemSingleton.Instance;
             var stopwatch = Stopwatch.StartNew();
-            saveSystem.ReadStateFromDisk("runtime_spawn_save_sample");
+            saveSystem.ReadStateFromStorage("runtime_spawn_save_sample");
             Debug.Log($"Read state from disk in {stopwatch.ElapsedMilliseconds} ms.");
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }

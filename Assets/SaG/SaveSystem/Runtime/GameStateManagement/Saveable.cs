@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using SaG.GuidReferences;
-using SaG.SaveSystem.Core;
-using SaG.SaveSystem.Data;
-#if UNITY_EDITOR
 using SaG.SaveSystem.Editor.Tools;
 using UnityEditor;
-#endif
 using UnityEngine;
+#if UNITY_EDITOR
+#endif
 
-namespace SaG.SaveSystem.Components
+namespace SaG.SaveSystem.GameStateManagement
 {
     /// <summary>
     /// Attach this to the root of an object that you want to save
@@ -43,8 +41,8 @@ namespace SaG.SaveSystem.Components
 
         private IGuidProvider _cachedGuidProvider;
 
-        private bool hasLoaded;
-        private bool hasStateReset;
+        private bool _hasLoaded;
+        private bool _hasStateReset;
 
         public bool ManualSaveLoad
         {
@@ -170,8 +168,8 @@ namespace SaG.SaveSystem.Components
         {
             // Since the game uses a new save game, reset loadOnce and hasLoaded
             loadOnce = false;
-            hasLoaded = false;
-            hasStateReset = true;
+            _hasLoaded = false;
+            _hasStateReset = true;
         }
 
         #region ISaveableContainer implementation
@@ -205,7 +203,7 @@ namespace SaG.SaveSystem.Components
                 }
                 else
                 {
-                    if (!hasStateReset && !getSaveableComponent.OnSaveCondition())
+                    if (!_hasStateReset && !getSaveableComponent.OnSaveCondition())
                     {
                         continue;
                     }
@@ -229,20 +227,20 @@ namespace SaG.SaveSystem.Components
                 _saveableComponents.Remove(emptyKey);
             }
 
-            hasStateReset = false;
+            _hasStateReset = false;
             return _container.Save();
         }
 
         /// <inheritdoc/>
         public void Load(JObject state)
         {
-            if (loadOnce && hasLoaded)
+            if (loadOnce && _hasLoaded)
             {
                 return;
             }
 
             // Ensure it loads only once with the loadOnce parameter set to true
-            hasLoaded = true;
+            _hasLoaded = true;
 
             if (_container == null)
                 _container = new SaveableContainerJObject("Saveable GameObject Container");
@@ -301,6 +299,11 @@ namespace SaG.SaveSystem.Components
         public bool TryGetValue<T>(string key, out T value)
         {
             return _container.TryGetValue(key, out value);
+        }
+
+        public bool ContainsKey(string key)
+        {
+            return _container.ContainsKey(key);
         }
 
         /// <inheritdoc/>

@@ -1,5 +1,5 @@
-﻿using SaG.SaveSystem.Components;
-using SaG.SaveSystem.Core;
+﻿using System.Diagnostics;
+using SaG.SaveSystem.GameStateManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,13 +7,13 @@ namespace SaG.SaveSystem.Samples.Tests
 {
     public class SaveSpeedTest : MonoBehaviour
     {
-        [SerializeField] private Button buttonTestSyncSave = null;
-        [SerializeField] private Button buttonTestSyncLoad = null;
-        [SerializeField] private Button buttonTestSyncSaveWrite = null;
-        [SerializeField] private Button buttonTestSyncSaveLoad = null;
-        [SerializeField] private Button buttonRandomizeTransforms = null;
+        [SerializeField] private Button buttonTestSynchronizeState = null;
+        [SerializeField] private Button buttonTestLoadState = null;
+        [SerializeField] private Button buttonTestWriteStateToDisk = null;
+        [SerializeField] private Button buttonTestReadStateFromDisk = null;
+        [SerializeField] private Button buttonMakeSaveablesDirty = null;
         [SerializeField] private Button buttonWipeAllSaveablesData = null;
-        [SerializeField] private Button buttonWipeSave = null;
+        [SerializeField] private Button buttonDeleteSaveFile = null;
         [SerializeField] private Text displayText = null;
 
         [SerializeField] private GameObject saveablesContainer = null;
@@ -26,64 +26,59 @@ namespace SaG.SaveSystem.Samples.Tests
         {
             saveables = saveablesContainer.GetComponentsInChildren<Saveable>();
 
-            buttonTestSyncSave.onClick.AddListener(SyncSave);
-            buttonTestSyncLoad.onClick.AddListener(SyncLoad);
-            buttonTestSyncSaveWrite.onClick.AddListener(SyncSaveWrite);
-            buttonTestSyncSaveLoad.onClick.AddListener(SyncSaveLoad);
-            buttonRandomizeTransforms.onClick.AddListener(RandomizeTransforms);
-            buttonWipeSave.onClick.AddListener(WipeSave);
+            buttonTestSynchronizeState.onClick.AddListener(SynchronizeState);
+            buttonTestLoadState.onClick.AddListener(LoadState);
+            buttonTestWriteStateToDisk.onClick.AddListener(WriteStateToStorage);
+            buttonTestReadStateFromDisk.onClick.AddListener(ReadStateFromStorage);
+            buttonMakeSaveablesDirty.onClick.AddListener(MakeSaveablesDirty);
+            buttonDeleteSaveFile.onClick.AddListener(WipeSave);
             buttonWipeAllSaveablesData.onClick.AddListener(WipeSaveables);
 
             displayText.text = lastestSpeed.ToString();
         }
 
-        private void SyncSave()
+        private void SynchronizeState()
         {
-            var stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            var stopWatch = Stopwatch.StartNew();
 
-            // SaveMaster.SyncSave();
+            SaveSystemSingleton.Instance.GameStateManager.SynchronizeState();
             
             stopWatch.Stop();
             displayText.text = stopWatch.Elapsed.TotalMilliseconds.ToString();
         }
 
-        private void SyncLoad()
+        private void LoadState()
         {
-            var stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            var stopWatch = Stopwatch.StartNew();
 
-            // SaveMaster.SyncLoad();
+            SaveSystemSingleton.Instance.GameStateManager.LoadState();
 
             stopWatch.Stop();
             displayText.text = stopWatch.Elapsed.TotalMilliseconds.ToString();
         }
 
-        private void SyncSaveWrite()
+        private void WriteStateToStorage()
         {
-            var stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            var stopWatch = Stopwatch.StartNew();
 
-            SaveMaster.WriteActiveSaveToDisk();
+            SaveSystemSingleton.Instance.WriteStateToStorage("speed_test_sample_save_file");
 
             stopWatch.Stop();
             displayText.text = stopWatch.Elapsed.TotalMilliseconds.ToString();
         }
 
-        private void SyncSaveLoad()
+        private void ReadStateFromStorage()
         {
-            var stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            var stopWatch = Stopwatch.StartNew();
 
-            // SaveMaster.ClearSlot();
-            // SaveMaster.SetSlot(0, true);
+            SaveSystemSingleton.Instance.ReadStateFromStorage("speed_test_sample_save_file");
 
             stopWatch.Stop();
             displayText.text = stopWatch.Elapsed.TotalMilliseconds.ToString();
             lastestSpeed = stopWatch.ElapsedMilliseconds;
         }
 
-        private void RandomizeTransforms()
+        private void MakeSaveablesDirty()
         {
             foreach (var item in gameObject.scene.GetRootGameObjects())
             {
@@ -95,13 +90,13 @@ namespace SaG.SaveSystem.Samples.Tests
 
         private void WipeSaveables()
         {
-            var stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            var stopWatch = Stopwatch.StartNew();
 
             int saveableCount = saveables.Length;
+            var gameStateManager = SaveSystemSingleton.Instance.GameStateManager;
             for (int i = 0; i < saveableCount; i++)
             {
-                // SaveMaster.WipeSaveable(saveables[i]);
+                gameStateManager.WipeSaveable(saveables[i]);
             }
 
             stopWatch.Stop();
@@ -111,11 +106,11 @@ namespace SaG.SaveSystem.Samples.Tests
 
         private void WipeSave()
         {
-            SaveMaster.DeleteSave();
-            displayText.text = "Wiped save, created new save at slot 0";
+            SaveSystemSingleton.Instance.Storage.Remove("speed_test_sample_save_file");
+            SaveSystemSingleton.Instance.GameStateManager.GameState = new GameState();
+            SaveSystemSingleton.Instance.GameStateManager.LoadState();
+            displayText.text = "Save file deleted";
             lastestSpeed = 0;
-
-            // SaveMaster.SetSlot(0, true);
         }
     }
 }

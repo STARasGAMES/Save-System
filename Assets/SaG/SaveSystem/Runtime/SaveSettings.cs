@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
-namespace SaG.SaveSystem.Data
+namespace SaG.SaveSystem
 {
     public class SaveSettings : ScriptableObject
     {

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace SaG.SaveSystem.Components
+namespace SaG.SaveSystem.GameStateManagement.Components
 {
     /// <summary>
     /// Example class of how to store a rotation.

@@ -65,7 +65,6 @@ namespace SaG.SaveSystem.Samples.Platformer2D.CustomGuidProvider
 
         void Awake()
         {
-            Debug.Log("Scriptable object awake");
             CreateGuid();
         }
 

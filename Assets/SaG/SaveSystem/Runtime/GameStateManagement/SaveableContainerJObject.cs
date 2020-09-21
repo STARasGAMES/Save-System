@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace SaG.SaveSystem.Core
+namespace SaG.SaveSystem.GameStateManagement
 {
     public class SaveableContainerJObject : ISaveableContainer
     {
@@ -87,6 +87,11 @@ namespace SaG.SaveSystem.Core
             var result = TryGetValue(key, out var d, typeof(T));
             value = (T)d;
             return result;
+        }
+
+        public bool ContainsKey(string key)
+        {
+            return _state.ContainsKey(key);
         }
 
         public bool Remove(string key)

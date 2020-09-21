@@ -1,5 +1,5 @@
 ﻿using System;
-using SaG.SaveSystem.Components;
+using SaG.SaveSystem.GameStateManagement;
 using UnityEngine;
 using Random = UnityEngine.Random;
 

@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using SaG.SaveSystem.Data;
+﻿using SaG.SaveSystem.GameStateManagement;
 using SaG.SaveSystem.SaveableRuntimeInstances;
-using UnityEngine;
+using SaG.SaveSystem.Storages;
 
-namespace SaG.SaveSystem.Core
+namespace SaG.SaveSystem
 {
     public class SaveSystem : ISaveSystem
     {
@@ -11,7 +10,7 @@ namespace SaG.SaveSystem.Core
         public IGameStateManager GameStateManager { get; set; }
         
         /// <inheritdoc/>
-        public FileUtility FileUtility { get; set; }
+        public IStorage Storage { get; set; }
 
         /// <inheritdoc/>
         public IRuntimeInstancesManager RuntimeInstancesManager { get; set; }
@@ -19,20 +18,20 @@ namespace SaG.SaveSystem.Core
         public SaveSystem()
         {
             GameStateManager = new GameStateManager();
-            FileUtility = new FileUtility();
+            Storage = new FileSystemStorage();
             RuntimeInstancesManager = new RuntimeInstancesManager(GameStateManager, new AssetResolver());
         }
         
         /// <inheritdoc/>
-        public void WriteStateToDisk(string name)
+        public void WriteStateToStorage(string name)
         {
-            FileUtility.WriteObjectToFile(name, GameStateManager.GameState);
+            Storage.Set(name, GameStateManager.GameState);
         }
 
         /// <inheritdoc/>
-        public void ReadStateFromDisk(string name)
+        public void ReadStateFromStorage(string name)
         {
-            GameStateManager.GameState = FileUtility.ReadObjectFromFile<GameState>(name);
+            GameStateManager.GameState = Storage.Get<GameState>(name);
         }
     }
 }

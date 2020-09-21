@@ -1,5 +1,6 @@
-﻿using SaG.SaveSystem.Core;
+﻿using SaG.SaveSystem.GameStateManagement;
 using SaG.SaveSystem.SaveableRuntimeInstances;
+using SaG.SaveSystem.Storages;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,7 +14,7 @@ namespace SaG.SaveSystem
         /// </summary>
         /// <param name="name">Save file name</param>
         /// <remarks>Note: game state will not automatically synchronized before writing to disk. You need to make this manually.</remarks>
-        void WriteStateToDisk(string name);
+        void WriteStateToStorage(string name);
 
         /// <summary>
         /// Reads game state from file and replaces the current game state.
@@ -25,12 +26,12 @@ namespace SaG.SaveSystem
         /// <code>IGameStateManager.LoadState()</code>
         /// </para>
         /// </remarks>
-        void ReadStateFromDisk(string name);
+        void ReadStateFromStorage(string name);
         
         IGameStateManager GameStateManager { get; }
         
         IRuntimeInstancesManager RuntimeInstancesManager { get; }
         
-        FileUtility FileUtility { get; }
+        IStorage Storage { get; }
     }
 }

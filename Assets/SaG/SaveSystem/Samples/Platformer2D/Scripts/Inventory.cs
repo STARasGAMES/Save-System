@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using SaG.SaveSystem.Components;
+using SaG.SaveSystem.GameStateManagement;
 using UnityEngine;
 
 namespace SaG.SaveSystem.Samples.Platformer2D

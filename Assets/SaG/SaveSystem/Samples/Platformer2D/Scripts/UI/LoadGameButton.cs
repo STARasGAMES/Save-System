@@ -6,7 +6,7 @@ namespace SaG.SaveSystem.Samples.Platformer2D.UI
     {
         public void LoadGame()
         {
-            GAME.LoadGameFromFile("ManualSave");
+            GAME.LoadGameFromManualSave();
         }
     }
 }

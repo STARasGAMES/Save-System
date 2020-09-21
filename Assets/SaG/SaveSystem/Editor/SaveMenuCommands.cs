@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using SaG.GuidReferences;
-using SaG.SaveSystem.Components;
-using SaG.SaveSystem.Data;
+using SaG.SaveSystem.GameStateManagement;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,7 +9,8 @@ namespace SaG.SaveSystem.Editor
 {
     public class SaveMenuCommands
     {
-        [MenuItem(itemName: "Saving/Open Save Location")]
+        private const string MenuCommandsRoot = "Tools/Saving/";
+        [MenuItem(MenuCommandsRoot + "Open Save Location")]
         public static void OpenSaveLocation()
         {
             string dataPath = string.Format("{0}/{1}/", Application.persistentDataPath, SaveSettings.Get().fileFolderName);
@@ -29,15 +29,20 @@ namespace SaG.SaveSystem.Editor
             EditorUtility.RevealInFinder(dataPath);
         }
 
-        [MenuItem("Saving/Open Save Settings")]
+        [MenuItem(MenuCommandsRoot + "Open Save Settings")]
         public static void OpenSaveSystemSettings()
         {
             Selection.activeInstanceID = SaveSettings.Get().GetInstanceID();
         }
 
-        [MenuItem("Saving/Utility/Wipe Save Identifications (Active Scene)")]
-        public static void WipeSceneSaveIdentifications()
+        [MenuItem(MenuCommandsRoot + "Wipe Active Scene's GUIDs")]
+        public static void WipeSceneGuids()
         {
+            bool dialogResult = EditorUtility.DisplayDialog("Wipe Active Scene's GUIDs",
+                "Are you sure you want to regenerate all GUIDs (Global Unique IDentifiers) from currently active scene? " +
+                "This action cannot be undone!", "Yes, I'm sure", "No");
+            if (!dialogResult)
+                return;
             var activeScene = SceneManager.GetActiveScene();
             GameObject[] rootObjects = activeScene.GetRootGameObjects();
             int rootObjectCount = rootObjects.Length;
@@ -54,9 +59,14 @@ namespace SaG.SaveSystem.Editor
             }
         }
 
-        [MenuItem("Saving/Utility/Wipe Save Identifications (Active Selection(s))")]
-        public static void WipeActiveSaveIdentifications()
+        [MenuItem(MenuCommandsRoot + "Wipe Selected Objects' GUIDs")]
+        public static void WipeSelectedObjectsGuids()
         {
+            bool dialogResult = EditorUtility.DisplayDialog("Wipe Selected Objects' GUIDs",
+                "Are you sure you want to regenerate all GUIDs (Global Unique IDentifiers) for all currently selected objects? " +
+                "This action cannot be undone!", "Yes, I'm sure", "No");
+            if (!dialogResult)
+                return;
             foreach (GameObject obj in Selection.gameObjects)
             {
                 foreach (Saveable item in obj.GetComponentsInChildren<Saveable>(true))

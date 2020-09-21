@@ -3,7 +3,7 @@ using System.IO;
 using Newtonsoft.Json;
 using UnityEngine;
 
-namespace SaG.SaveSystem.Core
+namespace SaG.SaveSystem.Storages
 {
     public class FileUtility
     {
