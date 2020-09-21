@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Linq;
-using SaG.SaveSystem.SaveableRuntimeInstances;
+using SaG.SaveSystem.RuntimeInstancesManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;

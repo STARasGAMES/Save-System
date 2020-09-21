@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
-namespace SaG.SaveSystem.SaveableRuntimeInstances
+namespace SaG.SaveSystem.RuntimeInstancesManagement
 {
     /// <summary>
     /// Each scene has a Save Instance Manager

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace SaG.SaveSystem.SaveableRuntimeInstances
+namespace SaG.SaveSystem.RuntimeInstancesManagement
 {
     public interface IAssetResolver
     {

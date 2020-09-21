@@ -1,7 +1,7 @@
 ﻿using SaG.SaveSystem.GameStateManagement;
 using UnityEngine;
 
-namespace SaG.SaveSystem.SaveableRuntimeInstances
+namespace SaG.SaveSystem.RuntimeInstancesManagement
 {
     /// <summary>
     /// Saved instances are objects that should respawn when they are not destroyed.
