@@ -845,6 +845,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _prefabPath: SamplePrefab
+  _prefabId: sample_asset_id
+  _prefab: {fileID: 3347042946361167603, guid: fe49dae84202dc14586aabd30a486100, type: 3}
 --- !u!4 &1269933117
 Transform:
   m_ObjectHideFlags: 0

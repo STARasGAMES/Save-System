@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SaG.SaveSystem.Storages
+﻿namespace SaG.SaveSystem.Storages
 {
     public interface IStorage : IContainer
     {

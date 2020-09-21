@@ -23,6 +23,8 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
         
         #region IRuntimeInstancesManager implementation
 
+        public IAssetResolver AssetResolver => _assetResolver;
+
         public GameObject Instantiate(string assetId, AssetSource source = AssetSource.Resources, Scene scene = default)
         {
             if (scene == default)

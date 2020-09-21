@@ -1,6 +1,6 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
+using SaG.SaveSystem.SaveableRuntimeInstances;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -11,15 +11,27 @@ namespace SaG.SaveSystem.Samples.RuntimeSpawn
 {
     public class Sample : MonoBehaviour
     {
-        [SerializeField] private string _prefabPath = default;
+        private const string SaveFileName = "sample_runtime_spawn_save_file";
         
+        [SerializeField] private string _prefabPath = default;
+
+        [Header("Registered asset")] [SerializeField]
+        private string _prefabId = default;
+
+        [SerializeField] private GameObject _prefab = default;
+
+        private void Awake()
+        {
+            SaveSystemSingleton.Instance.RuntimeInstancesManager.AssetResolver.RegisterAsset(_prefabId, _prefab);
+        }
+
         public void Save()
         {
             var saveSystem = SaveSystemSingleton.Instance;
             var stopwatch = Stopwatch.StartNew();
             saveSystem.GameStateManager.SynchronizeState();
             Debug.Log($"Synchronized state in {stopwatch.ElapsedMilliseconds} ms.");
-            saveSystem.WriteStateToStorage("runtime_spawn_save_sample");
+            saveSystem.WriteStateToStorage(SaveFileName);
             stopwatch.Restart();
             Debug.Log($"Written state to disk in {stopwatch.ElapsedMilliseconds} ms.");
         }
@@ -28,7 +40,7 @@ namespace SaG.SaveSystem.Samples.RuntimeSpawn
         {
             var saveSystem = SaveSystemSingleton.Instance;
             var stopwatch = Stopwatch.StartNew();
-            saveSystem.ReadStateFromStorage("runtime_spawn_save_sample");
+            saveSystem.ReadStateFromStorage(SaveFileName);
             Debug.Log($"Read state from disk in {stopwatch.ElapsedMilliseconds} ms.");
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
@@ -44,16 +56,23 @@ namespace SaG.SaveSystem.Samples.RuntimeSpawn
 
         private void Update()
         {
-            if (!Input.GetMouseButtonDown(0))
+            bool sphere = Input.GetMouseButtonDown(0);
+            bool cube = Input.GetMouseButtonDown(1);
+            if (!sphere && !cube)
                 return;
             if (EventSystem.current.IsPointerOverGameObject())
                 return;
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray,out var hit))
+            if (Physics.Raycast(ray, out var hit))
             {
-                var go = SaveSystemSingleton.Instance.RuntimeInstancesManager.Instantiate(_prefabPath);
+                GameObject go = null;
+                if (sphere)
+                    go = SaveSystemSingleton.Instance.RuntimeInstancesManager.Instantiate(_prefabPath);
+                if (cube)
+                    go = SaveSystemSingleton.Instance.RuntimeInstancesManager.Instantiate(_prefabId,
+                        AssetSource.Registered);
                 go.transform.position = hit.point;
-                go.transform.localScale = Vector3.one * Random.Range(0.5f, 2f);
+                go.transform.localScale = Vector3.one * Random.Range(0.5f, 1.5f);
             }
         }
     }
