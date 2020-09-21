@@ -1,0 +1,16 @@
+{
+    "name": "SaG.SaveSystem",
+    "references": [
+        "GUID:8ff782dde7f813e408bc044e34227f3b",
+        "GUID:e921ad2c6c58735448980a63475c7203"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
