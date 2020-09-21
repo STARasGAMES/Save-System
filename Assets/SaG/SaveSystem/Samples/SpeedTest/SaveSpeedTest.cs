@@ -3,10 +3,12 @@ using SaG.SaveSystem.GameStateManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SaG.SaveSystem.Samples.Tests
+namespace SaG.SaveSystem.Samples.SpeedTest
 {
     public class SaveSpeedTest : MonoBehaviour
     {
+        private const string SaveFileName = "sample_speed_test_save_file";
+        
         [SerializeField] private Button buttonTestSynchronizeState = null;
         [SerializeField] private Button buttonTestLoadState = null;
         [SerializeField] private Button buttonTestWriteStateToDisk = null;
@@ -61,7 +63,7 @@ namespace SaG.SaveSystem.Samples.Tests
         {
             var stopWatch = Stopwatch.StartNew();
 
-            SaveSystemSingleton.Instance.WriteStateToStorage("speed_test_sample_save_file");
+            SaveSystemSingleton.Instance.WriteStateToStorage(SaveFileName);
 
             stopWatch.Stop();
             displayText.text = stopWatch.Elapsed.TotalMilliseconds.ToString();
@@ -71,7 +73,7 @@ namespace SaG.SaveSystem.Samples.Tests
         {
             var stopWatch = Stopwatch.StartNew();
 
-            SaveSystemSingleton.Instance.ReadStateFromStorage("speed_test_sample_save_file");
+            SaveSystemSingleton.Instance.ReadStateFromStorage(SaveFileName);
 
             stopWatch.Stop();
             displayText.text = stopWatch.Elapsed.TotalMilliseconds.ToString();
@@ -106,7 +108,7 @@ namespace SaG.SaveSystem.Samples.Tests
 
         private void WipeSave()
         {
-            SaveSystemSingleton.Instance.Storage.Remove("speed_test_sample_save_file");
+            SaveSystemSingleton.Instance.Storage.Remove(SaveFileName);
             SaveSystemSingleton.Instance.GameStateManager.GameState = new GameState();
             SaveSystemSingleton.Instance.GameStateManager.LoadState();
             displayText.text = "Save file deleted";

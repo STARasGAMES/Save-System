@@ -5,6 +5,8 @@ namespace SaG.SaveSystem.SaveableRuntimeInstances
 {
     public interface IRuntimeInstancesManager
     {
+        IAssetResolver AssetResolver { get; }
+        
         /// <summary>
         /// Instantiates game object which instance will be saved and restored at scene loading.
         /// </summary>
