@@ -1,5 +1,5 @@
 ﻿using SaG.SaveSystem.GameStateManagement;
-using SaG.SaveSystem.SaveableRuntimeInstances;
+using SaG.SaveSystem.RuntimeInstancesManagement;
 using SaG.SaveSystem.Storages;
 
 namespace SaG.SaveSystem

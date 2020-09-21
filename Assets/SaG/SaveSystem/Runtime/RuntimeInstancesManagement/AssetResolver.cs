@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SaG.SaveSystem.SaveableRuntimeInstances
+namespace SaG.SaveSystem.RuntimeInstancesManagement
 {
     public class AssetResolver : IAssetResolver
     {

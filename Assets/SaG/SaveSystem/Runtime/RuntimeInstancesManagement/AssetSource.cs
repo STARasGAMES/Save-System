@@ -1,6 +1,6 @@
 
 
-namespace SaG.SaveSystem.SaveableRuntimeInstances
+namespace SaG.SaveSystem.RuntimeInstancesManagement
 {
     /// <summary>
     /// Used to tell the AssetResolver where to pull the 
