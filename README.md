@@ -2,7 +2,7 @@
 Save system for Unity game engine. Inspired by Component Save System: https://github.com/AlexMeesters/Component-Save-System
 
 ## Why one more save system?
-I've looked at existing solutions from GitHub and Asset Store. But nothing looks solid and convinient to use. Most of them provide the same functionality which is ability to set and get values based on keys. I call them PlayerPrefs-like, cuz they literally do the same thing but write data to file. On top of that they can provide different serialization methods such as JSON and Binary. Only a few provide data encryption to prevent players from cheating. And that's it.
+I've looked at existing solutions from GitHub and Asset Store. But nothing looks solid and convinient to use. Most of them provide the same functionality: ability to save/load values based on keys. I call them PlayerPrefs-like systems, cuz they literally do the same thing but write data to file. On top of that they can provide different serialization methods such as JSON and Binary. Only a few provide data encryption to prevent players from cheating. And that's it.
 
 Let's talk about this features in details.
 
