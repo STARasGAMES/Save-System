@@ -1,6 +1,30 @@
 # Save-System
 Save system for Unity game engine. Inspired by Component Save System: https://github.com/AlexMeesters/Component-Save-System
 
+## Installation
+Install via git url by adding these entries into your **manifest.json**
+
+```json
+  "scopedRegistries": [
+    {
+      "name": "Packages from jillejr",
+      "url": "https://npm.cloudsmith.io/jillejr/newtonsoft-json-for-unity/",
+      "scopes": [
+        "jillejr"
+      ]
+    }
+  ],
+  "dependencies": {
+    "com.sag.guid-references": "https://github.com/STARasGAMES/Guid-References.git#upm",
+    "com.sag.save-system": "https://github.com/STARasGAMES/Save-System.git#upm",
+    "jillejr.newtonsoft.json-for-unity": "12.0.201",
+    "jillejr.newtonsoft.json-for-unity.converters": "1.0.0",
+    ...
+  }
+```
+
+Guid References - https://github.com/STARasGAMES/Guid-References
+
 ## Why one more save system?
 I've looked at existing solutions from GitHub and Asset Store. But nothing looks solid and convinient to use. Most of them provide the same functionality: ability to save/load values based on keys. I call them PlayerPrefs-like systems, cuz they literally do the same thing but write data to file. On top of that they can provide different serialization methods such as JSON and Binary. Only a few provide data encryption to prevent players from cheating. And that's it.
 
