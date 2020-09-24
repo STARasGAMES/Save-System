@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 namespace SaG.SaveSystem.RuntimeInstancesManagement
 {
     /// <summary>
-    /// Each scene has a Save Instance Manager
+    /// Each scene has a Scene Runtime Instances Manager
     /// The responsibility for this manager is to keep track of all saved instances within that scene.
     /// Examples of saved instances are keys or items you have dropped out of your inventory.
     /// </summary>
@@ -39,15 +39,15 @@ namespace SaG.SaveSystem.RuntimeInstancesManagement
         [Serializable]
         private class SaveData
         {
-            public SpawnInfo[] _spawns;
+            public SpawnInfo[] spawns;
         }
 
         [Serializable]
         private struct SpawnInfo
         {
-            public AssetSource _source;
-            public string _assetId;
-            public string _guid;
+            public AssetSource source;
+            public string assetId;
+            public string guid;
         }
 
         #region ISceneRuntimeInstancesManager implementation
@@ -64,9 +64,9 @@ namespace SaG.SaveSystem.RuntimeInstancesManagement
 
             _spawnInfo.Add(savedInstance, new SpawnInfo()
             {
-                _assetId = assetId,
-                _guid = guidProvider.GetStringGuid(),
-                _source = source
+                assetId = assetId,
+                guid = guidProvider.GetStringGuid(),
+                source = source
             });
 
             return savedInstance.gameObject;
@@ -128,13 +128,13 @@ namespace SaG.SaveSystem.RuntimeInstancesManagement
 
             SaveData data = new SaveData()
             {
-                _spawns = new SpawnInfo[c]
+                spawns = new SpawnInfo[c]
             };
 
             int i = 0;
             foreach (SpawnInfo item in _spawnInfo.Values)
             {
-                data._spawns[i] = item;
+                data.spawns[i] = item;
                 i++;
             }
 
@@ -147,27 +147,27 @@ namespace SaG.SaveSystem.RuntimeInstancesManagement
             _lastSaveData = data;
             var saveData = _lastSaveData.ToObject<SaveData>();
          
-            if (saveData != null && saveData._spawns != null)
+            if (saveData != null && saveData.spawns != null)
             {
-                int itemCount = saveData._spawns.Length;
+                int itemCount = saveData.spawns.Length;
 
                 for (int i = 0; i < itemCount; i++)
                 {
-                    if (_loadedIDs.Contains(saveData._spawns[i]._guid))
+                    if (_loadedIDs.Contains(saveData.spawns[i].guid))
                     {
                         // this means we already spawned this game object
                         continue;
                     }
 
-                    var source = saveData._spawns[i]._source;
-                    var path = saveData._spawns[i]._assetId;
-                    var id = saveData._spawns[i]._guid;
+                    var source = saveData.spawns[i].source;
+                    var path = saveData.spawns[i].assetId;
+                    var id = saveData.spawns[i].guid;
                     if (Guid.TryParse(id, out var guid))
                     {
                         try
                         {
                             var obj = InstantiateInternal(path, guid, source);
-                            _spawnInfo.Add(obj, saveData._spawns[i]);
+                            _spawnInfo.Add(obj, saveData.spawns[i]);
                         }
                         catch (Exception e)
                         {
