@@ -1,6 +1,30 @@
 # Save-System
 Save system for Unity game engine. Inspired by Component Save System: https://github.com/AlexMeesters/Component-Save-System
 
+## Installation
+Install via git url by adding these entries into your **manifest.json**
+
+```json
+  "scopedRegistries": [
+    {
+      "name": "Packages from jillejr",
+      "url": "https://npm.cloudsmith.io/jillejr/newtonsoft-json-for-unity/",
+      "scopes": [
+        "jillejr"
+      ]
+    }
+  ],
+  "dependencies": {
+    "com.sag.guid-references": "https://github.com/STARasGAMES/Guid-References.git#upm",
+    "com.sag.save-system": "https://github.com/STARasGAMES/Save-System.git#upm",
+    "jillejr.newtonsoft.json-for-unity": "12.0.201",
+    "jillejr.newtonsoft.json-for-unity.converters": "1.0.0",
+    ...
+  }
+```
+
+Guid References - https://github.com/STARasGAMES/Guid-References
+
 ## Why one more save system?
 I've looked at existing solutions from GitHub and Asset Store. But nothing looks solid and convinient to use. Most of them provide the same functionality: ability to save/load values based on keys. I call them PlayerPrefs-like systems, cuz they literally do the same thing but write data to file. On top of that they can provide different serialization methods such as JSON and Binary. Only a few provide data encryption to prevent players from cheating. And that's it.
 
@@ -36,6 +60,44 @@ But what we are getting insted when using JSON?
 Important note: to have points 3 and 4 you need to use complex Json serializers like Newtonsoft.Json.
 
 ### Encryption?
-Yes, cool feature to have, but it can't guarantee that players will not cheat. If your goal is to have 100% secure game, you eventually need to use some kind of server where you will validate each action of the player. In other words, repeat all client's code on server side. Cloud saving also not 100% secure. That's it.
+Yes, cool feature to have, but it can't guarantee that players will not cheat. If your goal is to have 100% secure game, you need to use some kind of server where you will validate each action of the player. In other words, repeat all client's code on server side. Cloud saving also not 100% secure. That's it.
 
 Anyway, I will add encryption in nearest future. 
+
+
+## Save System structure
+0. Guid References - an individual package
+1. GameState management
+2. Storages
+3. Runtime instances management
+
+System structured the way allowing you to decide what modules to use. For example, you may endup using only GameState management, and implementing storing by yourself. 
+
+### Guid References
+Provides a way to reference game objects by GUIDs (Global Unique IDentifiers). 
+In the Save System it plays important role because it is responsible for creating and managing unique ids (GUIDs) for game objects that need to be saved.
+
+GUID is a persistent ID which will not change if you rename game object, change it's parent or even move it to another scene - GUID remains the same.
+
+Also, Guid References provides cross-scene references. Your project can highly benefit from using this package. More about Guid References: https://github.com/STARasGAMES/Guid-References
+
+### GameState Management
+The core peace of the system. 
+
+This module is responsible for gathering game-state from objects and loading game-state back.
+
+### Storages
+Provides extensible interface to create your own storages. This is the PlayerPrefs-like part :)
+Contains pre-made FileSystemStorage which provides a way to store savedata in files.
+
+### Runtime Instances Management
+This is an optional module. It provides a way to save game objects that were created at runtime. 
+
+The way it works: everytime you need to Instantiate saveable gameobject you need to use `IRuntimeInstancesManager.Instantiate(string assetId, AssetSource source, Scene scene);`.
+What it does is just:
+1. Creates new instance based on assetId(it may be just path to prefab from Resources folder)
+2. Generates new GUID for this instance and assotiates assetId with it. 
+3. Instance has GUID which means it will be saved as any other gameobject.
+4. When game is loading RuntimeInstancesManager will recreate instances using stored GUIDs and assetIds.
+
+It's quite simple module but you can use it as an example on how to create similar systems **specifically for your game**.
